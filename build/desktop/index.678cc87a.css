@@ -1,0 +1,2 @@
+.about-inner{grid-template-rows:1fr 1fr;grid-template-columns:1fr 3fr;justify-content:center;align-items:center;display:grid;overflow:hidden}.about-title{color:var(--gray-text-color);grid-row:1/3;font-size:10em;font-weight:700;display:inline-block;transform:rotate(-90deg)}.about-para-1{color:#fff;align-self:flex-end;margin-bottom:1rem;margin-right:18rem;font-size:3em}.about-para-2{color:var(--gray-text-color);align-self:flex-start;margin-top:1rem;margin-right:22rem;font-size:2.5em;font-weight:lighter}
+/*# sourceMappingURL=index.678cc87a.css.map */

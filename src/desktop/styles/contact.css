@@ -1,0 +1,38 @@
+.contact-outer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-inner{
+    max-width: 100%;
+    min-width: 80%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    opacity: 0;
+}
+
+.contact-title{
+    font-size: 6em;
+    color: var(--gray-text-color);
+}
+
+.contact-inner > div{
+    position: relative;
+}
+
+.contact-background-text{
+    position: absolute;
+    font-size: 8em;
+    font-weight: bold;
+    transform: translate(-3rem, -6rem);
+    color: var(--bg-text-color);
+}
+
+.contact-info-text{
+    position: absolute;
+    color: white;
+    font-size: 2em;
+}

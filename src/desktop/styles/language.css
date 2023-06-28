@@ -1,0 +1,109 @@
+.language-inner{
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+
+    overflow: hidden;
+}
+
+.language-bg-container{
+    position: absolute;
+    box-sizing: border-box;
+
+    height: 100vh;
+    width: 100vw;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 2rem;
+    overflow: hidden;
+}
+
+.language-bg-text-1{
+    font-size: 12em;
+    font-weight: bold;
+    color: var(--bg-text-color);
+    transform: translate(200%,0);
+}
+
+.language-bg-text-2{
+    align-self: flex-end;
+    font-size: 12em;
+    font-weight: bold;
+    color: var(--bg-text-color);
+    transform: translate(-200%,0);
+}
+
+.language-boxs-outer{
+    position: absolute;
+    box-sizing: border-box;
+
+    height: 100vh;
+    width: 100vw;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3rem;
+}
+
+.language-boxs-inner{
+    height: 15rem;
+    width: 65rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3rem;
+}
+
+.language-boxs-inner:nth-child(1){
+    margin-right: 12rem;
+}
+
+.language-boxs-inner:nth-child(2){
+    margin-left: 12rem;
+}
+
+.language-box-inner{
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    outline: 2px white solid;
+    opacity: 0;
+}
+
+.language-box-title{
+    color: white;
+    font-size: 2.5em;
+    font-weight: 600;
+}
+
+.language-box-inner > section{
+    display: grid;
+    gap: 1rem;
+}
+
+.language-box-level{
+    font-size: 1.2em;
+    color: var(--gray-text-color)
+}
+
+.language-box-level-bar{
+    height: 1rem;
+}
+
+#nodejs-level-bar{
+    background-image: linear-gradient(135deg, white 90%, rgba(255, 255, 255, 0.253) 10%);
+}
+
+#js-level-bar, #html-level-bar, #sql-level-bar, #mongodb-level-bar{
+    background-image: linear-gradient(135deg, white 70%, rgba(255, 255, 255, 0.253) 30%);
+}
+
+#rust-level-bar{
+    background-image: linear-gradient(135deg, white 50%, rgba(255, 255, 255, 0.253) 50%);
+}
