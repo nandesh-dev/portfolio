@@ -126,11 +126,7 @@ function animate(){
             elements.projects.strudygo.infoTitle.style = `transform: translate(${inversePercentage * 500}%)`
             elements.projects.strudygo.infoDescription.style = `transform: translate(${inversePercentage * 600}%)`
             elements.projects.strudygo.stack.style = `transform: translate(${inversePercentage * 700}%)`
-            
-            elements.projects.strudygo.timelineOuter.style = `transform: translate(0,0)`
-            elements.projects.strudygo.infoTitle.style = `transform: translate(0)`
-            elements.projects.strudygo.infoDescription.style = `transform: translate(0)`
-            elements.projects.strudygo.stack.style = `transform: translate(0)`
+
             elements.projects.portfolio.timelineOuter.style = `transform: translate(0,100vh)`
             elements.projects.portfolio.infoTitle.style = `transform: translate(0,500%)`
             elements.projects.portfolio.infoDescription.style = `transform: translate(0,600%)`
