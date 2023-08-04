@@ -31,6 +31,14 @@
     color: var(--bg-text-color);
 }
 
+.contact-background-text-small{
+    position: absolute;
+    font-size: 5em;
+    font-weight: bold;
+    transform: translate(-3rem, -6rem);
+    color: var(--bg-text-color);
+}
+
 .contact-info-text{
     position: absolute;
     color: white;
