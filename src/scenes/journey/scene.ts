@@ -145,22 +145,22 @@ class Progress {
   private velocity: number;
 
   constructor(initialValue: number) {
-    this.value = initialValue
-    this.velocity = 0
+    this.value = initialValue;
+    this.velocity = 0;
   }
 
   tick(deltaTime: number) {
     const RESISTANCE = 0.002;
 
-    this.value += deltaTime * this.velocity
-    this.velocity -= deltaTime * RESISTANCE * this.velocity
+    this.value += deltaTime * this.velocity;
+    this.velocity -= deltaTime * RESISTANCE * this.velocity;
 
-    this.value = Math.max(0, this.value)
+    this.value = Math.max(0, this.value);
   }
 
   push(force: number) {
-    const FORCE_CONSTANT = 0.00003
-    this.velocity += force * FORCE_CONSTANT
+    const FORCE_CONSTANT = 0.0000003;
+    this.velocity += force * FORCE_CONSTANT;
   }
 }
 
@@ -172,11 +172,13 @@ export class JourneyScene {
   private rootNode: Node;
   private progress: Progress;
   private lastRenderTime: number;
+  private touchStartY: number;
 
   constructor(containerDOMElement: HTMLElement) {
     this.containerDOMElement = containerDOMElement;
 
     this.progress = new Progress(0);
+    this.touchStartY = 0;
 
     this.scene = new Scene();
     this.scene.background = new Color("white");
@@ -196,7 +198,7 @@ export class JourneyScene {
 
     this.containerDOMElement.appendChild(this.webGLRenderer.domElement);
 
-    this.lastRenderTime = Date.now()
+    this.lastRenderTime = Date.now();
     this.webGLRenderer.setAnimationLoop(this.animate);
 
     this.rootNode = buildJourneyNodes();
@@ -249,29 +251,66 @@ export class JourneyScene {
   }
 
   private animate: XRFrameRequestCallback = () => {
-    const deltaTime = Date.now() - this.lastRenderTime
-    this.lastRenderTime = Date.now()
+    const deltaTime = Date.now() - this.lastRenderTime;
+    this.lastRenderTime = Date.now();
 
-    this.progress.tick(deltaTime)
+    this.progress.tick(deltaTime);
 
     this.updateCameraPosition();
     this.webGLRenderer.render(this.scene, this.camera);
   };
 
   public addEventListeners(element: Window | HTMLElement) {
-    element.addEventListener("resize", this.resizeEventListener);
-    element.addEventListener("wheel", this.scrollEventListener as EventListener, { passive: false});
+    element.addEventListener("resize", this.resizeEventListener, {
+      passive: true,
+    });
+    element.addEventListener(
+      "wheel",
+      this.wheelEventListener as EventListener,
+      { passive: false },
+    );
+    element.addEventListener(
+      "touchstart",
+      this.touchStartEventListener as EventListener,
+      { passive: false },
+    );
+    element.addEventListener(
+      "touchmove",
+      this.touchMoveEventListener as EventListener,
+      { passive: false },
+    );
   }
 
   public removeEventListeners(element: Window | HTMLElement) {
     element.removeEventListener("resize", this.resizeEventListener);
-    element.removeEventListener("wheel", this.scrollEventListener as EventListener);
+    element.removeEventListener(
+      "wheel",
+      this.wheelEventListener as EventListener,
+    );
   }
 
-  private scrollEventListener = (e: WheelEvent) => {
-    e.preventDefault()
-    this.progress.push(Math.sign(e.deltaY))
-  }
+  private touchStartEventListener = (e: TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length < 1) return;
+    this.touchStartY = e.touches[0].clientY;
+  };
+
+  private touchMoveEventListener = (e: TouchEvent) => {
+    const MULTIPLIER = 3;
+
+    e.preventDefault();
+    if (e.touches.length < 1) return;
+    const deltaY = -(e.touches[0].clientY - this.touchStartY) * MULTIPLIER;
+
+    this.progress.push(deltaY);
+
+    this.touchStartY = e.touches[0].clientY;
+  };
+
+  private wheelEventListener = (e: WheelEvent) => {
+    e.preventDefault();
+    this.progress.push(e.deltaY);
+  };
 
   private resizeEventListener = () => {
     const width = this.containerDOMElement.offsetWidth;
