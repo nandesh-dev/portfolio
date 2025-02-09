@@ -13,7 +13,7 @@ import { PlatformMesh } from "@/meshes/platform";
 const CAMERA_FOV = 75,
   CAMERA_NEAR_POINT = 0.1,
   CAMERA_FAR_POINT = 1000,
-  CAMERA_HEIGHT = 10;
+  CAMERA_HEIGHT = 20;
 
 const JOURNEY_STARTING_POSITION = Object.freeze(new Vector3(0, 0, 0)),
   JOURNEY_STARTING_ANGLE = 0;
@@ -26,6 +26,7 @@ interface NodeObject {
 
 class Node {
   public relativeAngle: number;
+  public objects: (Object3D & NodeObject)[];
   public group: Group;
   public children: Node[];
   public selected: boolean;
@@ -38,6 +39,7 @@ class Node {
     children: Node[] = [],
   ) {
     this.relativeAngle = angle;
+    this.objects = objects;
     this.absoluteAngle = 0;
     this.group = new Group();
     for (const object of objects) {
@@ -159,7 +161,7 @@ class Progress {
   }
 
   push(force: number) {
-    const FORCE_CONSTANT = 0.0000003;
+    const FORCE_CONSTANT = 0.000003;
     this.velocity += force * FORCE_CONSTANT;
   }
 }
@@ -236,8 +238,11 @@ export class JourneyScene {
     }
 
     const curve = new CatmullRomCurve3(curvePoints, false, "centripetal", 1);
-    this.camera.position.copy(curve.getPointAt(this.progress.value % 1));
-    this.camera.lookAt(curve.getPointAt((this.progress.value + 0.1) % 1));
+
+    const k = Math.min(1, this.progress.value / curvePoints.length);
+
+    this.camera.position.copy(curve.getPointAt(k % 1));
+    this.camera.lookAt(curve.getPointAt((k + 0.1) % 1));
   }
 
   private addNodesGroupToScene() {
@@ -255,10 +260,24 @@ export class JourneyScene {
     this.lastRenderTime = Date.now();
 
     this.progress.tick(deltaTime);
+    this.updateObjectsProgress();
 
     this.updateCameraPosition();
     this.webGLRenderer.render(this.scene, this.camera);
   };
+
+  private updateObjectsProgress(
+    value: number = this.progress.value,
+    node: Node = this.rootNode,
+  ) {
+    for (const object of node.objects) {
+      object.setProgress(value);
+    }
+
+    for (const child of node.children) {
+      this.updateObjectsProgress(value - 1, child);
+    }
+  }
 
   public addEventListeners(element: Window | HTMLElement) {
     element.addEventListener("resize", this.resizeEventListener, {

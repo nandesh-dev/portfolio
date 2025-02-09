@@ -1,12 +1,12 @@
 import TestSVG from "./svg/test.svg?raw";
 import { StoneMesh } from "@/meshes/stone";
-import { Group } from "three";
+import { Group, Mesh, ShaderMaterial } from "three";
 import { SVGLoader } from "three/examples/jsm/Addons.js";
 
 const TOTAL_SVG_SIZE = 48,
   SVG_CONTENT_SIZE = 32;
 
-const PLATFORM_HEIGHT = 2;
+const PLATFORM_HEIGHT = 20;
 
 const SVG_DIRECTIONS_MAP: Record<string, Partial<Directions>> = {
   [TestSVG]: {
@@ -74,14 +74,24 @@ export class PlatformMesh extends Group {
   }
 
   public setProgress(progress: number) {
+    const EFFECT_CONSTANT = 1;
+    const CAMERA_GAP = 3;
+
     for (let stone of this.children) {
       const k = stone.position.z / SVG_CONTENT_SIZE + 0.5; // Distance factor from start
-      const l = Math.max(0, Math.min(1, k + progress)); // Y Displacement factor
-      const m = -2 * l ** 2 + 3 * l; // Quadradic curve
+      const l = Math.max(0, Math.min(1, k + progress + CAMERA_GAP)); // Y Displacement factor
+      const a = 2.09;
+      const b = -5.26;
+      const c = 0.96 - a - b;
+      const m = a * l ** 3 + b * l ** 2 + c * l; // Cubic curve
 
-      stone.position.y = (m - 1) * PLATFORM_HEIGHT;
+      stone.position.y = (m - 1) * PLATFORM_HEIGHT * EFFECT_CONSTANT;
 
-      if (stone.position.y <= -PLATFORM_HEIGHT) {
+      ((stone as Mesh).material as ShaderMaterial).uniforms[
+        "uPositionY"
+      ].value = stone.position.y;
+
+      if (m <= 0.001) {
         stone.visible = false;
       } else {
         stone.visible = true;

@@ -8,6 +8,7 @@ export class StoneMaterial extends ShaderMaterial {
       uniforms: {
         uColor: { value: new Color("cyan") },
         uHeight: { value: height },
+        uPositionY: { value: -height },
       },
       fragmentShader: FragmentGLSL,
       vertexShader: VertexGLSL,
