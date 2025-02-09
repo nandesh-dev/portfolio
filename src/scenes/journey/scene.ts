@@ -140,18 +140,43 @@ function buildJourneyNodes() {
   );
 }
 
+class Progress {
+  public value: number;
+  private velocity: number;
+
+  constructor(initialValue: number) {
+    this.value = initialValue
+    this.velocity = 0
+  }
+
+  tick(deltaTime: number) {
+    const RESISTANCE = 0.002;
+
+    this.value += deltaTime * this.velocity
+    this.velocity -= deltaTime * RESISTANCE * this.velocity
+
+    this.value = Math.max(0, this.value)
+  }
+
+  push(force: number) {
+    const FORCE_CONSTANT = 0.00003
+    this.velocity += force * FORCE_CONSTANT
+  }
+}
+
 export class JourneyScene {
   private scene: Scene;
   private camera: PerspectiveCamera;
   private webGLRenderer: WebGLRenderer;
   private containerDOMElement: HTMLElement;
   private rootNode: Node;
-  private progress: number;
+  private progress: Progress;
+  private lastRenderTime: number;
 
   constructor(containerDOMElement: HTMLElement) {
     this.containerDOMElement = containerDOMElement;
 
-    this.progress = 0;
+    this.progress = new Progress(0);
 
     this.scene = new Scene();
     this.scene.background = new Color("white");
@@ -168,8 +193,10 @@ export class JourneyScene {
 
     this.webGLRenderer = new WebGLRenderer();
     this.webGLRenderer.setSize(width, height);
+
     this.containerDOMElement.appendChild(this.webGLRenderer.domElement);
 
+    this.lastRenderTime = Date.now()
     this.webGLRenderer.setAnimationLoop(this.animate);
 
     this.rootNode = buildJourneyNodes();
@@ -207,8 +234,8 @@ export class JourneyScene {
     }
 
     const curve = new CatmullRomCurve3(curvePoints, false, "centripetal", 1);
-    this.camera.position.copy(curve.getPointAt(this.progress % 1));
-    this.camera.lookAt(curve.getPointAt((this.progress + 0.1) % 1));
+    this.camera.position.copy(curve.getPointAt(this.progress.value % 1));
+    this.camera.lookAt(curve.getPointAt((this.progress.value + 0.1) % 1));
   }
 
   private addNodesGroupToScene() {
@@ -221,18 +248,29 @@ export class JourneyScene {
     }
   }
 
-  private animate = () => {
-    this.progress += 0.0001;
+  private animate: XRFrameRequestCallback = () => {
+    const deltaTime = Date.now() - this.lastRenderTime
+    this.lastRenderTime = Date.now()
+
+    this.progress.tick(deltaTime)
+
     this.updateCameraPosition();
     this.webGLRenderer.render(this.scene, this.camera);
   };
 
   public addEventListeners(element: Window | HTMLElement) {
     element.addEventListener("resize", this.resizeEventListener);
+    element.addEventListener("wheel", this.scrollEventListener as EventListener, { passive: false});
   }
 
   public removeEventListeners(element: Window | HTMLElement) {
     element.removeEventListener("resize", this.resizeEventListener);
+    element.removeEventListener("wheel", this.scrollEventListener as EventListener);
+  }
+
+  private scrollEventListener = (e: WheelEvent) => {
+    e.preventDefault()
+    this.progress.push(Math.sign(e.deltaY))
   }
 
   private resizeEventListener = () => {
