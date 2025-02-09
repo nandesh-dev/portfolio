@@ -296,7 +296,7 @@ export class JourneyScene {
   };
 
   private touchMoveEventListener = (e: TouchEvent) => {
-    const MULTIPLIER = 3;
+    const MULTIPLIER = 5;
 
     e.preventDefault();
     if (e.touches.length < 1) return;
