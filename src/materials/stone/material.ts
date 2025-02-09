@@ -1,10 +1,9 @@
 import FragmentGLSL from "./fragment.glsl?raw";
 import VertexGLSL from "./vertex.glsl?raw";
-import { Color, ShaderMaterial, TextureLoader } from "three";
+import { Color, ShaderMaterial } from "three";
 
 export class StoneMaterial extends ShaderMaterial {
   constructor(height: number) {
-    const textureLoader = new TextureLoader();
     super({
       uniforms: {
         uColor: { value: new Color("cyan") },
