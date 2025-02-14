@@ -74,7 +74,7 @@ export class PlatformMesh extends Group {
   }
 
   public setProgress(progress: number) {
-    const EFFECT_CONSTANT = 1;
+    const EFFECT_CONSTANT = 0.5;
     const CAMERA_GAP = 3;
 
     for (let stone of this.children) {
