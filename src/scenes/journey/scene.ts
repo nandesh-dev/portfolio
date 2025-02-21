@@ -8,7 +8,10 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
+import { CSS3DRenderer } from "three/examples/jsm/Addons.js";
 import { PlatformMesh } from "@/meshes/platform";
+import { HTMLMesh } from "@/meshes/html";
+import { div, p } from "@/utils/elements";
 
 const CAMERA_FOV = 75,
   CAMERA_NEAR_POINT = 0.1,
@@ -17,6 +20,8 @@ const CAMERA_FOV = 75,
 
 const JOURNEY_STARTING_POSITION = Object.freeze(new Vector3(0, 0, 0)),
   JOURNEY_STARTING_ANGLE = 0;
+
+const JOURNEY_STARTING_PROGRESS = 0.8;
 
 const NODE_SIZE = 32;
 
@@ -80,11 +85,20 @@ function buildJourneyNodes() {
     [new PlatformMesh({ straight: true })],
     [
       new Node(
-        PI / 4,
-        [new PlatformMesh({ straight: true })],
+        0,
+        [
+          new PlatformMesh({ straight: true }),
+          new HTMLMesh(
+            div(
+              { class: "w-[50dvw]" },
+              p({ class: "text-4xl/12 font-light" }, "Hey There!"),
+              p({ class: "text-4xl/12 font-light" }, "I am Nandesh"),
+            ),
+          ),
+        ],
         [
           new Node(
-            PI / 4,
+            0,
             [new PlatformMesh({ straight: true })],
             [
               new Node(
@@ -170,6 +184,7 @@ export class JourneyScene {
   private scene: Scene;
   private camera: PerspectiveCamera;
   private webGLRenderer: WebGLRenderer;
+  private css3DRenderer: CSS3DRenderer;
   private containerDOMElement: HTMLElement;
   private rootNode: Node;
   private progress: Progress;
@@ -179,7 +194,7 @@ export class JourneyScene {
   constructor(containerDOMElement: HTMLElement) {
     this.containerDOMElement = containerDOMElement;
 
-    this.progress = new Progress(0);
+    this.progress = new Progress(JOURNEY_STARTING_PROGRESS);
     this.touchStartY = 0;
 
     this.scene = new Scene();
@@ -198,7 +213,19 @@ export class JourneyScene {
     this.webGLRenderer = new WebGLRenderer();
     this.webGLRenderer.setSize(width, height);
 
+    const css3DRendererContainer = document.createElement("div");
+
+    css3DRendererContainer.style.position = "absolute";
+    css3DRendererContainer.style.inset = "0px";
+
+    this.css3DRenderer = new CSS3DRenderer({
+      element: css3DRendererContainer,
+    });
+
+    this.css3DRenderer.setSize(width, height);
+
     this.containerDOMElement.appendChild(this.webGLRenderer.domElement);
+    this.containerDOMElement.appendChild(css3DRendererContainer);
 
     this.lastRenderTime = Date.now();
     this.webGLRenderer.setAnimationLoop(this.animate);
@@ -264,6 +291,7 @@ export class JourneyScene {
 
     this.updateCameraPosition();
     this.webGLRenderer.render(this.scene, this.camera);
+    this.css3DRenderer.render(this.scene, this.camera);
   };
 
   private updateObjectsProgress(
@@ -336,6 +364,7 @@ export class JourneyScene {
     const height = this.containerDOMElement.offsetHeight;
 
     this.webGLRenderer.setSize(width, height);
+    this.css3DRenderer.setSize(width, height);
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
