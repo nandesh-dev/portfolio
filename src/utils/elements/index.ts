@@ -1,40 +1,40 @@
 type Properties = {
-  class?: string,
-  style?: Partial<CSSStyleDeclaration>;
-};
+    class?: string
+    style?: Partial<CSSStyleDeclaration>
+}
 
 function createElement<T extends keyof HTMLElementTagNameMap>(
-  tag: T,
-  prop: Properties,
-  ...children: (HTMLElement | string)[]
+    tag: T,
+    prop: Properties,
+    ...children: (HTMLElement | string)[]
 ) {
-  const element = document.createElement(tag);
+    const element = document.createElement(tag)
 
-  if (prop.style) {
-    Object.assign(element.style, prop.style);
-  }
-
-  if (prop.class) {
-    element.className = prop.class
-  }
-
-  for (const child of children) {
-    if (typeof child == "string") {
-      element.innerText = child;
-    } else {
-      element.appendChild(child);
+    if (prop.style) {
+        Object.assign(element.style, prop.style)
     }
-  }
 
-  return element;
+    if (prop.class) {
+        element.className = prop.class
+    }
+
+    for (const child of children) {
+        if (typeof child == 'string') {
+            element.innerText = child
+        } else {
+            element.appendChild(child)
+        }
+    }
+
+    return element
 }
 
 function createTagedElementFunction<T extends keyof HTMLElementTagNameMap>(
-  tag: T,
+    tag: T
 ) {
-  return (prop: Properties, ...children: (HTMLElement|string)[]) =>
-    createElement(tag, prop, ...children);
+    return (prop: Properties, ...children: (HTMLElement | string)[]) =>
+        createElement(tag, prop, ...children)
 }
 
-export const div = createTagedElementFunction("div");
-export const p = createTagedElementFunction("p");
+export const div = createTagedElementFunction('div')
+export const p = createTagedElementFunction('p')
