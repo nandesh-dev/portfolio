@@ -1,7 +1,0 @@
-#!/bin/sh
-
-set -e
-
-echo "[ .git/hooks/pre-commit ] Code formatting started"
-npx prettier --write .
-echo "[ .git/hooks/pre-commit ] Code formatting completed"
