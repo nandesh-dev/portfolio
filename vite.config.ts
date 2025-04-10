@@ -2,10 +2,9 @@ import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [tailwindcss()],
-    root: 'src',
+    root: 'src/',
     build: {
         outDir: '../dist',
         emptyOutDir: true,
