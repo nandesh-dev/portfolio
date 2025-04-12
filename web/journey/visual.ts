@@ -1,8 +1,27 @@
-import { Color, Euler, PerspectiveCamera, Scene, Vector3 } from 'three'
+import { Color, PerspectiveCamera, Scene } from 'three'
 import { Renderer } from './renderer'
-import { JourneyPath, Path } from './path'
-import { OrbitControls } from 'three/examples/jsm/Addons.js'
+import { ComputedPath, computePath } from './path'
+import { CSS3DObject, OrbitControls } from 'three/examples/jsm/Addons.js'
 import { Tile } from './objects/tile'
+
+const JourneyPath = computePath([
+  {
+    angle: (0 * Math.PI) / 180,
+    nodes: [(document.getElementById('template__heading') as HTMLTemplateElement).content.cloneNode(true)],
+  },
+  {
+    angle: (45 * Math.PI) / 180,
+  },
+  {
+    angle: (45 * Math.PI) / 180,
+  },
+  {
+    angle: (0 * Math.PI) / 180,
+  },
+  {
+    angle: (-45 * Math.PI) / 180,
+  },
+])
 
 export class Visual {
   private renderer: Renderer
@@ -37,27 +56,28 @@ export class Visual {
   }
 
   private build() {
-    const buildPath = (path: Path, baseCoordinates?: Vector3, baseRotation?: Euler) => {
-      let cummulativePosition = baseCoordinates?.clone() || new Vector3(0, 0, 0)
-      let cummulativeRotation = baseRotation?.clone() || new Euler(0, 0, 0)
-
+    const buildPath = (path: ComputedPath) => {
       for (const pathBlock of path) {
-        cummulativeRotation.y += pathBlock.angle
-
-        const relativePosition = new Vector3(1, 0, 0)
-        relativePosition.applyEuler(cummulativeRotation)
-        relativePosition.setLength(6)
-        cummulativePosition.add(relativePosition)
-
         const tile = new Tile()
-        tile.position.copy(cummulativePosition)
-        tile.setRotationFromEuler(cummulativeRotation)
+        tile.position.copy(pathBlock.position)
+        tile.setRotationFromEuler(pathBlock.rotation)
 
         this.scene.add(tile)
 
-        if (pathBlock.branchPath) {
-          for (const branchPath of pathBlock.branchPath) {
-            buildPath(branchPath, cummulativePosition, cummulativeRotation)
+        for (const element of pathBlock.elements) {
+          const css3DObject = new CSS3DObject(element)
+          css3DObject.position.copy(pathBlock.position)
+          const rotation = pathBlock.rotation.clone()
+          rotation.y += -Math.PI / 2
+          css3DObject.position.y += 1
+          css3DObject.setRotationFromEuler(rotation)
+          css3DObject.scale.setScalar(0.02)
+          this.scene.add(css3DObject)
+        }
+
+        if (pathBlock.branches) {
+          for (const branchPath of pathBlock.branches) {
+            buildPath(branchPath)
           }
         }
       }
