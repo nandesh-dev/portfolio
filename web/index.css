@@ -1,0 +1,75 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --var-color-white__light: #fafcff;
+    --var-color-white__dark: #f4f5f6;
+    --var-color-black__light: #282a30;
+    --var-color-black__dark: #1c1e21;
+    --var-color-gray__light: #cfced5;
+    --var-color-gray__dark: #a3abc0;
+    --var-color-yellow__light: #fcf6a8;
+    --var-color-yellow__dark: #f2f84f;
+    --var-color-orange__light: #fdd295;
+    --var-color-orange__dark: #f8a64f;
+    --var-color-red__light: #f5aaaf;
+    --var-color-red__dark: #f4767f;
+    --var-color-purple__light: #d1acce;
+    --var-color-purple__dark: #d085ac;
+    --var-color-blue__light: #8fabc9;
+    --var-color-blue__dark: #6d81be;
+    --var-color-sky__light: #afe2f5;
+    --var-color-sky__dark: #81cab7;
+    --var-color-green__light: #b8db98;
+    --var-color-green__dark: #91bb93;
+
+    --theme-color-gray__light: var(--var-color-gray__light);
+    --theme-color-gray__dark: var(--var-color-gray__dark);
+    --theme-color-yellow__light: var(--var-color-yellow__light);
+    --theme-color-yellow__dark: var(--var-color-yellow__dark);
+    --theme-color-orange__light: var(--var-color-orange__light);
+    --theme-color-orange__dark: var(--var-color-orange__dark);
+    --theme-color-red__light: var(--var-color-red__light);
+    --theme-color-red__dark: var(--var-color-red__dark);
+    --theme-color-purple__light: var(--var-color-purple__light);
+    --theme-color-purple__dark: var(--var-color-purple__dark);
+    --theme-color-blue__light: var(--var-color-blue__light);
+    --theme-color-blue__dark: var(--var-color-blue__dark);
+    --theme-color-sky__light: var(--var-color-sky__light);
+    --theme-color-sky__dark: var(--var-color-sky__dark);
+    --theme-color-green__light: var(--var-color-green__light);
+    --theme-color-green__dark: var(--var-color-green__dark);
+    --theme-color-background__light: var(--var-color-white__light);
+    --theme-color-background__dark: var(--var-color-white__dark);
+    --theme-color-text__light: var(--var-color-black__light);
+    --theme-color-text__dark: var(--var-color-black__dark);
+
+    @media (prefers-color-scheme: dark) {
+        --theme-color-text__light: var(--var-color-white__light);
+        --theme-color-text__dark: var(--var-color-white__dark);
+        --theme-color-background__light: var(--var-color-black__light);
+        --theme-color-background__dark: var(--var-color-black__dark);
+    }
+}
+
+html {
+    -moz-text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+}
+
+body {
+    margin: 0;
+    width: 100dvw;
+    height: 100dvh;
+    overflow: hidden;
+    background-color: var(--theme-color-background__dark);
+}
+
+canvas {
+    width: 100dvw;
+    height: 100dvh;
+}
