@@ -41,15 +41,13 @@ export class ObjectMaterial extends ShaderMaterial {
         this.parameters = parameters
     }
 
-    public updateParameters(parameters: ObjectMaterialParameters) {
-        this.parameters = parameters
-
-        this.uniforms.uObjectColorLight.value = parameters.color.object.light
-        this.uniforms.uObjectColorDark.value = parameters.color.object.dark
-        this.uniforms.uFogColor.value = parameters.color.fog
-        this.uniforms.uRoughness.value = parameters.roughness
-        this.uniforms.uCameraPosition.value = parameters.camera.position
-        this.uniforms.uSunPosition.value = parameters.sun.position
-        this.uniforms.uSunIntensity.value = parameters.sun.intensity
+    public recalculateUniforms() {
+        this.uniforms.uObjectColorLight.value = this.parameters.color.object.light
+        this.uniforms.uObjectColorDark.value = this.parameters.color.object.dark
+        this.uniforms.uFogColor.value = this.parameters.color.fog
+        this.uniforms.uRoughness.value = this.parameters.roughness
+        this.uniforms.uCameraPosition.value = this.parameters.camera.position
+        this.uniforms.uSunPosition.value = this.parameters.sun.position
+        this.uniforms.uSunIntensity.value = this.parameters.sun.intensity
     }
 }

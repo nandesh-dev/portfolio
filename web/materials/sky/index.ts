@@ -26,10 +26,8 @@ export class SkyMaterial extends ShaderMaterial {
         this.parameters = parameters
     }
 
-    public updateParameters(parameters: SkyMaterialParameters) {
-        this.parameters = parameters
-
-        this.uniforms.uObjectColorLight.value = parameters.color.light
-        this.uniforms.uObjectColorDark.value = parameters.color.dark
+    public recalculateUniforms() {
+        this.uniforms.uColorLight.value = this.parameters.color.light
+        this.uniforms.uColorDark.value = this.parameters.color.dark
     }
 }
