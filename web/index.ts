@@ -14,6 +14,7 @@ import './index.css'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
 import { ObjectMaterial } from './materials/object'
 import { SkyMaterial } from './materials/sky'
+import { animate } from 'animejs'
 
 type DOMElements = {
     canvas: HTMLCanvasElement
@@ -180,6 +181,27 @@ class Application {
             })
         )
 
+        this.dom.addEventListener('cssupdate', (css) => {
+            animate(sky.material.parameters.color.dark, {
+                ...css.colors.background.dark.clone(),
+                onRender: () => {
+                    sky.material.recalculateUniforms()
+                },
+            })
+            animate(sky.material.parameters.color.light, {
+                ...css.colors.background.light.clone(),
+                onRender: () => {
+                    sky.material.recalculateUniforms()
+                },
+            })
+            animate(cube.material.parameters.color.fog, {
+                ...css.colors.background.dark.clone(),
+                onRender: () => {
+                    cube.material.recalculateUniforms()
+                },
+            })
+        })
+
         this.visual.scene.add(sky)
 
         this.visual.scene.add(cube)
@@ -191,11 +213,8 @@ class Application {
 
     private animate() {
         requestAnimationFrame(() => this.animate())
-
-        this.material.updateParameters({
-            ...this.material.parameters,
-            camera: { position: this.visual.camera.position.clone() },
-        })
+        this.material.parameters.camera.position.copy(this.visual.camera.position)
+        this.material.recalculateUniforms()
 
         this.visual.render()
     }
