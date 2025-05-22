@@ -1,7 +1,7 @@
-import { BoxGeometry, Color, Mesh, PerspectiveCamera, Scene, ShaderMaterial, Vector3, WebGLRenderer } from 'three'
-import { animate } from 'animejs'
+import { BoxGeometry, Color, Mesh, PerspectiveCamera, Scene, Texture, Vector3, WebGLRenderer } from 'three'
 import './index.css'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
+import { ObjectMaterial } from './materials/object'
 
 type DOMElements = {
     canvas: HTMLCanvasElement
@@ -85,103 +85,6 @@ class DOM {
     }
 }
 
-type MaterialParameters = {
-    color: {
-        object: {
-            light: Color
-            dark: Color
-        }
-        fog: Color
-    }
-    roughness: number
-    camera: {
-        position: Vector3
-    }
-    sun: {
-        position: Vector3
-        intensity: number
-    }
-}
-
-class Material extends ShaderMaterial {
-    public parameters: MaterialParameters
-    constructor(parameters: MaterialParameters) {
-        super({
-            vertexShader: /* glsl */ `
-varying vec3 vPosition;
-varying vec3 vNormal;
-
-void main() {
-  vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-  vNormal = normal;
-
-	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-}
-            `,
-            fragmentShader: /* glsl */ `
-uniform vec3 uObjectColorLight;
-uniform vec3 uObjectColorDark;
-uniform vec3 uFogColor;
-uniform float uRoughness;
-uniform vec3 uCameraPosition;
-uniform vec3 uSunPosition;
-uniform float uSunIntensity;
-
-varying vec3 vPosition;
-varying vec3 vNormal;
-
-void main() {
-  float lightIntensity = uSunIntensity;
-  float lightDistance = length(uSunPosition - vPosition);
-  vec3 lightDirection = normalize(uSunPosition - vPosition);
-
-  vec3 viewDirection = normalize(uCameraPosition - vPosition);
-  float viewDistance = length(uCameraPosition - vPosition);
-  
-  vec3 halfVector = normalize(lightDirection + viewDirection);
-
-  float specularFactor = pow(uRoughness + (1.0 - uRoughness) * dot(vNormal, halfVector), 2.0);
-  float lightAngleFactor = dot(vNormal, lightDirection);
-  float lightDistanceFactor = pow(max(lightDistance, 0.00000001), -2.0);
-
-  float depth = max(-vPosition.y, 0.0);
-  float cameraAltitude = max(uCameraPosition.y, 0.0);
-  float fogFactor = pow(clamp(viewDistance * (depth / max(depth + cameraAltitude, 0.00000001)) * 0.2, 0.0, 1.0), 0.8);
-
-  float lightness = specularFactor * lightAngleFactor * lightDistanceFactor * lightIntensity;
-
-  vec3 color = mix(mix(uObjectColorDark, uObjectColorLight, lightness), uFogColor, fogFactor);
-
-	gl_FragColor = vec4(color, 1.0);
-}
-            `,
-            uniforms: {
-                uObjectColorLight: { value: parameters.color.object.light },
-                uObjectColorDark: { value: parameters.color.object.dark },
-                uFogColor: { value: parameters.color.fog },
-                uRoughness: { value: parameters.roughness },
-                uCameraPosition: { value: parameters.camera.position },
-                uSunPosition: { value: parameters.sun.position },
-                uSunIntensity: { value: parameters.sun.intensity },
-            },
-        })
-
-        this.parameters = parameters
-    }
-
-    public updateParameters(parameters: MaterialParameters) {
-        this.parameters = parameters
-
-        this.uniforms.uObjectColorLight.value = parameters.color.object.light
-        this.uniforms.uObjectColorDark.value = parameters.color.object.dark
-        this.uniforms.uFogColor.value = parameters.color.fog
-        this.uniforms.uRoughness.value = parameters.roughness
-        this.uniforms.uCameraPosition.value = parameters.camera.position
-        this.uniforms.uSunPosition.value = parameters.sun.position
-        this.uniforms.uSunIntensity.value = parameters.sun.intensity
-    }
-}
-
 type VisualParameters = {
     canvas: HTMLCanvasElement
     size: {
@@ -219,7 +122,7 @@ class Application {
     private dom: DOM
     private visual: Visual
 
-    private material: Material
+    private material: ObjectMaterial
 
     constructor() {
         this.dom = new DOM()
@@ -228,18 +131,12 @@ class Application {
             size: { width: window.innerWidth, height: window.innerHeight },
         })
 
-        this.visual.scene.background = this.dom.css.colors.background.dark.clone().convertSRGBToLinear()
-        this.dom.addEventListener('cssupdate', (css) => {
-            animate(this.visual.scene.background as Color, {
-                ...css.colors.background.dark.getRGB({ r: 0, g: 0, b: 0 }),
-                duration: 250,
-            })
-        })
+        this.visual.scene.background = new Texture()
 
         this.visual.camera.position.set(6, 4, 8)
         this.visual.camera.lookAt(0, 0, 0)
 
-        this.material = new Material({
+        this.material = new ObjectMaterial({
             color: {
                 object: {
                     light: this.dom.css.colors.orange.light.clone(),
