@@ -1,7 +1,19 @@
-import { BoxGeometry, Color, Mesh, PerspectiveCamera, Scene, Texture, Vector3, WebGLRenderer } from 'three'
+import {
+    BoxGeometry,
+    Color,
+    IcosahedronGeometry,
+    LinearSRGBColorSpace,
+    Mesh,
+    PerspectiveCamera,
+    Scene,
+    Texture,
+    Vector3,
+    WebGLRenderer,
+} from 'three'
 import './index.css'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
 import { ObjectMaterial } from './materials/object'
+import { SkyMaterial } from './materials/sky'
 
 type DOMElements = {
     canvas: HTMLCanvasElement
@@ -104,6 +116,7 @@ class Visual {
         this.camera = new PerspectiveCamera(50, size.width / size.height, 0.1, 1000)
 
         this.renderer = new WebGLRenderer({ canvas, antialias: true })
+        this.renderer.outputColorSpace = LinearSRGBColorSpace
         this.renderer.setSize(size.width, size.height)
     }
 
@@ -153,8 +166,21 @@ class Application {
                 intensity: 1000000,
             },
         })
+
         const cube = new Mesh(new BoxGeometry(2, 10, 2), this.material)
         cube.position.y = -4.8
+
+        const sky = new Mesh(
+            new IcosahedronGeometry(100),
+            new SkyMaterial({
+                color: {
+                    light: this.dom.css.colors.background.light.clone(),
+                    dark: this.dom.css.colors.background.dark.clone(),
+                },
+            })
+        )
+
+        this.visual.scene.add(sky)
 
         this.visual.scene.add(cube)
 
