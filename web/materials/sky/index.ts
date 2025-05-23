@@ -1,11 +1,17 @@
-import { BackSide, Color, ShaderMaterial } from 'three'
+import { BackSide, Color, ShaderMaterial, Vector3 } from 'three'
 import fragmentShader from './fragment.glsl?raw'
 import vertexShader from './vertex.glsl?raw'
 
 export type SkyMaterialParameters = {
     color: {
-        light: Color
-        dark: Color
+        sky: {
+            light: Color
+            dark: Color
+        }
+        fog: Color
+    }
+    camera: {
+        position: Vector3
     }
 }
 
@@ -17,8 +23,10 @@ export class SkyMaterial extends ShaderMaterial {
             vertexShader,
             fragmentShader,
             uniforms: {
-                uColorLight: { value: parameters.color.light },
-                uColorDark: { value: parameters.color.dark },
+                uSkyColorLight: { value: parameters.color.sky.light },
+                uSkyColorDark: { value: parameters.color.sky.dark },
+                uFogColor: { value: parameters.color.fog },
+                uCameraPosition: { value: parameters.camera.position },
             },
             side: BackSide,
         })
@@ -27,7 +35,9 @@ export class SkyMaterial extends ShaderMaterial {
     }
 
     public recalculateUniforms() {
-        this.uniforms.uColorLight.value = this.parameters.color.light
-        this.uniforms.uColorDark.value = this.parameters.color.dark
+        this.uniforms.uSkyColorLight.value = this.parameters.color.sky.light
+        this.uniforms.uSkyColorDark.value = this.parameters.color.sky.dark
+        this.uniforms.uFogColor.value = this.parameters.color.fog
+        this.uniforms.uCameraPosition.value = this.parameters.camera.position
     }
 }

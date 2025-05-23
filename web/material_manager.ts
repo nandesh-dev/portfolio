@@ -25,8 +25,14 @@ export class MaterialManager {
             objects: new Map(),
             sky: new SkyMaterial({
                 color: {
-                    light: this.dom.css.colors.background.light.clone(),
-                    dark: this.dom.css.colors.background.dark.clone(),
+                    sky: {
+                        light: this.dom.css.colors.background.light.clone(),
+                        dark: this.dom.css.colors.background.dark.clone(),
+                    },
+                    fog: this.dom.css.colors.background.dark.clone(),
+                },
+                camera: {
+                    position: this.visual.camera.position.clone(),
                 },
             }),
         }
@@ -77,12 +83,12 @@ export class MaterialManager {
             })
         })
 
-        animate(this.materials.sky.parameters.color.light, {
+        animate(this.materials.sky.parameters.color.sky.light, {
             ...this.dom.css.colors.background.light.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
 
-        animate(this.materials.sky.parameters.color.dark, {
+        animate(this.materials.sky.parameters.color.sky.dark, {
             ...this.dom.css.colors.background.dark.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
@@ -93,5 +99,8 @@ export class MaterialManager {
             material.parameters.camera.position.copy(this.visual.camera.position)
             material.recalculateUniforms()
         })
+
+        this.materials.sky.parameters.camera.position.copy(this.visual.camera.position)
+        this.materials.sky.recalculateUniforms()
     }
 }
