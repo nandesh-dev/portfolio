@@ -92,6 +92,11 @@ export class MaterialManager {
             ...this.dom.css.colors.background.dark.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
+
+        animate(this.materials.sky.parameters.color.fog, {
+            ...this.dom.css.colors.background.dark.clone(),
+            onRender: () => this.materials.sky.recalculateUniforms(),
+        })
     }
 
     public updateVisualBasedMaterialUniforms() {
