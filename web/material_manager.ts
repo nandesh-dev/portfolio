@@ -26,10 +26,10 @@ export class MaterialManager {
             sky: new SkyMaterial({
                 color: {
                     sky: {
-                        light: this.dom.css.colors.background.light.clone(),
-                        dark: this.dom.css.colors.background.dark.clone(),
+                        light: this.dom.css.colors.background.original.light.clone(),
+                        dark: this.dom.css.colors.background.original.dark.clone(),
                     },
-                    fog: this.dom.css.colors.background.dark.clone(),
+                    fog: this.dom.css.colors.background.original.dark.clone(),
                 },
                 camera: {
                     position: this.visual.camera.position.clone(),
@@ -50,12 +50,12 @@ export class MaterialManager {
             material = new ObjectMaterial({
                 color: {
                     object: {
-                        light: this.dom.css.colors[color].light.clone(),
-                        dark: this.dom.css.colors[color].dark.clone(),
+                        light: this.dom.css.colors[color][shade].light.clone(),
+                        dark: this.dom.css.colors[color][shade].dark.clone(),
                     },
-                    fog: this.dom.css.colors.background.dark.clone(),
+                    fog: this.dom.css.colors.background.original.dark.clone(),
                 },
-                roughness: 0.8,
+                roughness: 0.6,
                 camera: {
                     position: this.visual.camera.position.clone(),
                 },
@@ -78,23 +78,23 @@ export class MaterialManager {
     private updateColorBasedMaterialUniforms() {
         this.materials.objects.forEach((material) => {
             animate(material.parameters.color.fog, {
-                ...this.dom.css.colors.background.dark.clone(),
+                ...this.dom.css.colors.background.original.dark.clone(),
                 onRender: () => material.recalculateUniforms(),
             })
         })
 
         animate(this.materials.sky.parameters.color.sky.light, {
-            ...this.dom.css.colors.background.light.clone(),
+            ...this.dom.css.colors.background.original.light.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
 
         animate(this.materials.sky.parameters.color.sky.dark, {
-            ...this.dom.css.colors.background.dark.clone(),
+            ...this.dom.css.colors.background.original.dark.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
 
         animate(this.materials.sky.parameters.color.fog, {
-            ...this.dom.css.colors.background.dark.clone(),
+            ...this.dom.css.colors.background.original.dark.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
     }

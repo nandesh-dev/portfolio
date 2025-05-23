@@ -16,15 +16,18 @@ export const DOMCSSColorNames = [
     'background',
     'text',
 ] as const
-export const DOMCSSColorShadeNames = ['1', '2', '3'] as const
+export const DOMCSSColorShadeNames = ['original', 'plus', 'minus'] as const
+export const DOMCSSColorShadeHueOffset = (0.4 / 180) * Math.PI
 
 export type DOMCSSColorName = (typeof DOMCSSColorNames)[number]
 export type DOMCSSColorShadeName = (typeof DOMCSSColorShadeNames)[number]
 
 export type DOMCSSColors = {
     [name in DOMCSSColorName]: {
-        light: Color
-        dark: Color
+        [shade in DOMCSSColorShadeName]: {
+            light: Color
+            dark: Color
+        }
     }
 }
 
@@ -75,15 +78,24 @@ export class DOM {
         const computedStyle = getComputedStyle(document.body)
 
         return DOMCSSColorNames.reduce((colors, name) => {
-            const dark = computedStyle.getPropertyValue(`--theme-color-${name}__dark`)
-            if (!dark) throw new Error(`Color ${name} dark not found`)
+            const darkCSSVariable = computedStyle.getPropertyValue(`--theme-color-${name}__dark`)
+            if (!darkCSSVariable) throw new Error(`Color ${name} dark not found`)
+            let dark = new Color(darkCSSVariable).convertLinearToSRGB()
 
-            const light = computedStyle.getPropertyValue(`--theme-color-${name}__light`)
-            if (!light) throw new Error(`Color ${name} light not found`)
+            const lightCSSVariable = computedStyle.getPropertyValue(`--theme-color-${name}__light`)
+            if (!lightCSSVariable) throw new Error(`Color ${name} light not found`)
+            const light = new Color(lightCSSVariable).convertLinearToSRGB()
 
             colors[name] = {
-                dark: new Color(dark).convertLinearToSRGB(),
-                light: new Color(light).convertLinearToSRGB(),
+                original: { dark, light },
+                plus: {
+                    dark: dark.clone().offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
+                    light: light.clone().offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
+                },
+                minus: {
+                    dark: dark.clone().offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
+                    light: light.clone().offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
+                },
             }
 
             return colors
