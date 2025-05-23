@@ -20,13 +20,13 @@ void main() {
     vec3 halfVector = normalize(lightDirection + viewDirection);
 
     float specularFactor = pow(uRoughness + (1.0 - uRoughness) * dot(vNormal, halfVector), 2.0);
-    float lightAngleFactor = dot(vNormal, lightDirection);
+    float lightAngleFactor = pow(dot(vNormal, lightDirection), 0.8);
     float lightDistanceFactor = pow(max(lightDistance, 0.00000001), -2.0);
 
     float depth = max(-vPosition.y, 0.0);
     float cameraAltitude = max(uCameraPosition.y, 0.0);
     float fogDistance = viewDistance * (depth / max(depth + cameraAltitude, 0.00000001));
-    float fogFactor = clamp(1.0 - pow(1.8, -max(fogDistance, 0.00000001)), 0.0, 1.0);
+    float fogFactor = clamp(1.0 - pow(1.8, -max(fogDistance * 1.6, 0.00000001)), 0.0, 1.0);
 
     float lightness = specularFactor * lightAngleFactor * lightDistanceFactor * lightIntensity;
 
