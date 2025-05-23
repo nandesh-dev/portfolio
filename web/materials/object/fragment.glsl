@@ -10,7 +10,7 @@ varying vec3 vPosition;
 varying vec3 vNormal;
 
 float specularFactor(vec3 lightDirection, vec3 viewDirection) {
-  float s = (1.0 - uRoughness) * dot(vNormal, normalize(lightDirection + viewDirection)) + uRoughness;
+  float s = uRoughness * dot(vNormal, normalize(lightDirection + viewDirection)) + 1.0 - uRoughness;
   return s * s;
 }
 
@@ -40,7 +40,7 @@ void main() {
     float viewDistance = length(uCameraPosition - vPosition);
 
     vec3 color = mix(
-      mix(uObjectColorDark, uObjectColorLight, specularFactor(lightDirection, viewDirection) * lightAngleFactor(lightDirection) * lightDistanceFactor(lightDistance) * uSunIntensity),
+      mix(uObjectColorDark, uObjectColorLight, clamp(specularFactor(lightDirection, viewDirection) * lightAngleFactor(lightDirection) * lightDistanceFactor(lightDistance) * uSunIntensity, 0.0, 1.0)),
       uFogColor,
       fogFactor(viewDistance)
     );
