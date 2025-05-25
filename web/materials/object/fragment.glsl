@@ -27,7 +27,7 @@ float fogFactor(float viewDistance) {
     float f = dot(
       vec3(step(0.0, vPosition.y) * step(0.0, uCameraPosition.y), step(vPosition.y, 0.0) * step(uCameraPosition.y, 0.0), step(uCameraPosition.y * vPosition.y, 0.0)), 
       vec3(0.0, 1.0, abs(min(vPosition.y, uCameraPosition.y) / (vPosition.y - uCameraPosition.y)))
-    ) * viewDistance;
+    ) * viewDistance * 2.0;
 
     return clamp(1.0 - 1.0 / (1.0 + 0.75 * f + 0.2 * f * f + 0.1 * f * f * f * f), 0.0, 1.0);
 }

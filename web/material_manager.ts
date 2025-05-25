@@ -60,8 +60,8 @@ export class MaterialManager {
                     position: this.visual.camera.position.clone(),
                 },
                 sun: {
-                    position: new Vector3(500, 500, 500),
-                    intensity: 1000000,
+                    position: new Vector3(50, 50, 50),
+                    intensity: 3000,
                 },
             })
 

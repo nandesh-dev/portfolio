@@ -5,6 +5,7 @@ import { DOM } from './dom'
 import { Visual } from './visual'
 import { MaterialManager } from './material_manager'
 import { BridgeObject } from './objects/bridge'
+import { PathObject } from './objects/path'
 
 class Application {
     private dom: DOM
@@ -30,6 +31,13 @@ class Application {
         const bridge = new BridgeObject({ materialManager: this.materialManager })
         this.visual.scene.add(bridge)
         this.visual.scene.add(sky)
+
+        const path = new PathObject({ materialManager: this.materialManager })
+        const path2 = new PathObject({ materialManager: this.materialManager })
+        this.visual.scene.add(path)
+        this.visual.scene.add(path2)
+        path.position.z = 3.7
+        path2.position.z = -3.7
         //this.visual.scene.add(cube)
 
         new OrbitControls(this.visual.camera, this.dom.elements.canvas)
