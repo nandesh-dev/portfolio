@@ -14,7 +14,7 @@ export class MaterialManager {
     private dom: DOM
     private visual: Visual
     private materials: {
-        objects: Map<{ color: DOMCSSColorName; shade: DOMCSSColorShadeName }, ObjectMaterial>
+        objects: Map<{ color: DOMCSSColorName; shade: DOMCSSColorShadeName; roughness: number }, ObjectMaterial>
         sky: SkyMaterial
     }
 
@@ -42,10 +42,10 @@ export class MaterialManager {
         })
     }
 
-    public getRandomShadeObjectMaterial(color: DOMCSSColorName): ObjectMaterial {
+    public getRandomShadeObjectMaterial(color: DOMCSSColorName, roughness: number): ObjectMaterial {
         const shade = DOMCSSColorShadeNames[Math.floor(Math.random() * DOMCSSColorShadeNames.length)]
 
-        let material = this.materials.objects.get({ color, shade })
+        let material = this.materials.objects.get({ color, shade, roughness })
         if (!material) {
             material = new ObjectMaterial({
                 color: {
@@ -55,17 +55,16 @@ export class MaterialManager {
                     },
                     fog: this.dom.css.colors.background.original.dark.clone(),
                 },
-                roughness: 0.6,
+                roughness,
                 camera: {
                     position: this.visual.camera.position.clone(),
                 },
                 sun: {
-                    position: new Vector3(500, 500, 500),
-                    intensity: 1000000,
+                    position: new Vector3(20, 20, 20),
                 },
             })
 
-            this.materials.objects.set({ color, shade }, material)
+            this.materials.objects.set({ color, shade, roughness }, material)
         }
 
         return material

@@ -1,10 +1,11 @@
-import { BoxGeometry, IcosahedronGeometry, Mesh } from 'three'
+import { IcosahedronGeometry, Mesh } from 'three'
 import './index.css'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
 import { DOM } from './dom'
 import { Visual } from './visual'
 import { MaterialManager } from './material_manager'
 import { BridgeObject } from './objects/bridge'
+import { PathObject } from './objects/path'
 
 class Application {
     private dom: DOM
@@ -22,15 +23,18 @@ class Application {
         this.visual.camera.position.set(6, 4, 8)
         this.visual.camera.lookAt(0, 0, 0)
 
-        const cube = new Mesh(new BoxGeometry(2, 10, 2), this.materialManager.getRandomShadeObjectMaterial('green'))
-        cube.position.y = -4.8
-
         const sky = new Mesh(new IcosahedronGeometry(100), this.materialManager.getSkyMaterial())
 
         const bridge = new BridgeObject({ materialManager: this.materialManager })
         this.visual.scene.add(bridge)
         this.visual.scene.add(sky)
-        //this.visual.scene.add(cube)
+
+        const path = new PathObject({ materialManager: this.materialManager })
+        const path2 = new PathObject({ materialManager: this.materialManager })
+        this.visual.scene.add(path)
+        this.visual.scene.add(path2)
+        path.position.z = 3.7
+        path2.position.z = -3.7
 
         new OrbitControls(this.visual.camera, this.dom.elements.canvas)
 
