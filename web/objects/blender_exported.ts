@@ -8,6 +8,7 @@ type OBJModel = string
 export type BlenderExportedObjectParameters = {
     model: OBJModel
     materialManager: MaterialManager
+    materialRoughness: number
 }
 
 export class BlenderExportedObject extends Group {
@@ -18,7 +19,10 @@ export class BlenderExportedObject extends Group {
             .setMaterials({
                 create: (name: string) => {
                     if ((DOMCSSColorNames as readonly string[]).includes(name)) {
-                        return parameters.materialManager.getRandomShadeObjectMaterial(name as DOMCSSColorName)
+                        return parameters.materialManager.getRandomShadeObjectMaterial(
+                            name as DOMCSSColorName,
+                            parameters.materialRoughness
+                        )
                     }
 
                     throw new Error(`Unknown material: '${name}'`)
