@@ -4,7 +4,6 @@ uniform vec3 uFogColor;
 uniform float uRoughness;
 uniform vec3 uCameraPosition;
 uniform vec3 uSunPosition;
-uniform float uSunIntensity;
 
 varying vec3 vPosition;
 varying vec3 vNormal;
@@ -19,10 +18,6 @@ float lightAngleFactor(vec3 lightDirection) {
   return a / (0.3 * a + 0.7);
 }
 
-float lightDistanceFactor(float lightDistance) {
-  return 1.0 / (0.00000001 + lightDistance * lightDistance);
-}
-
 float fogFactor(float viewDistance) {
     float f = dot(
       vec3(step(0.0, vPosition.y) * step(0.0, uCameraPosition.y), step(vPosition.y, 0.0) * step(uCameraPosition.y, 0.0), step(uCameraPosition.y * vPosition.y, 0.0)), 
@@ -33,14 +28,13 @@ float fogFactor(float viewDistance) {
 }
 
 void main() {
-    float lightDistance = length(uSunPosition - vPosition);
     vec3 lightDirection = normalize(uSunPosition - vPosition);
 
     vec3 viewDirection = normalize(uCameraPosition - vPosition);
     float viewDistance = length(uCameraPosition - vPosition);
 
     vec3 color = mix(
-      mix(uObjectColorDark, uObjectColorLight, clamp(specularFactor(lightDirection, viewDirection) * lightAngleFactor(lightDirection) * lightDistanceFactor(lightDistance) * uSunIntensity, 0.0, 1.0)),
+      mix(uObjectColorDark, uObjectColorLight, clamp(specularFactor(lightDirection, viewDirection) * lightAngleFactor(lightDirection), 0.0, 1.0)),
       uFogColor,
       fogFactor(viewDistance)
     );

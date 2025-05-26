@@ -55,13 +55,12 @@ export class MaterialManager {
                     },
                     fog: this.dom.css.colors.background.original.dark.clone(),
                 },
-                roughness: 0.6,
+                roughness: 0.9,
                 camera: {
                     position: this.visual.camera.position.clone(),
                 },
                 sun: {
-                    position: new Vector3(50, 50, 50),
-                    intensity: 3000,
+                    position: new Vector3(20, 20, 20),
                 },
             })
 

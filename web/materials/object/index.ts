@@ -16,7 +16,6 @@ export type ObjectMaterialParameters = {
     }
     sun: {
         position: Vector3
-        intensity: number
     }
 }
 
@@ -34,7 +33,6 @@ export class ObjectMaterial extends ShaderMaterial {
                 uRoughness: { value: parameters.roughness },
                 uCameraPosition: { value: parameters.camera.position },
                 uSunPosition: { value: parameters.sun.position },
-                uSunIntensity: { value: parameters.sun.intensity },
             },
         })
 
@@ -48,6 +46,5 @@ export class ObjectMaterial extends ShaderMaterial {
         this.uniforms.uRoughness.value = this.parameters.roughness
         this.uniforms.uCameraPosition.value = this.parameters.camera.position
         this.uniforms.uSunPosition.value = this.parameters.sun.position
-        this.uniforms.uSunIntensity.value = this.parameters.sun.intensity
     }
 }
