@@ -18,7 +18,9 @@ export class BlenderExportedObject extends Group {
         const object = new OBJLoader()
             .setMaterials({
                 create: (name: string) => {
-                    if ((DOMCSSColorNames as readonly string[]).includes(name)) {
+                    if (
+                        (DOMCSSColorNames as readonly string[]).includes(name)
+                    ) {
                         return parameters.materialManager.getRandomShadeObjectMaterial(
                             name as DOMCSSColorName,
                             parameters.materialRoughness

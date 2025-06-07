@@ -53,12 +53,14 @@ export class DOM {
 
         this.eventListeners = { cssupdate: [] }
 
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            this.css.colors = this.getCSSColors()
-            for (const listener of this.eventListeners.cssupdate) {
-                listener(this.css)
-            }
-        })
+        window
+            .matchMedia('(prefers-color-scheme: dark)')
+            .addEventListener('change', () => {
+                this.css.colors = this.getCSSColors()
+                for (const listener of this.eventListeners.cssupdate) {
+                    listener(this.css)
+                }
+            })
     }
 
     private getElements(): DOMElements {
@@ -78,23 +80,37 @@ export class DOM {
         const computedStyle = getComputedStyle(document.body)
 
         return DOMCSSColorNames.reduce((colors, name) => {
-            const darkCSSVariable = computedStyle.getPropertyValue(`--theme-color-${name}__dark`)
-            if (!darkCSSVariable) throw new Error(`Color ${name} dark not found`)
+            const darkCSSVariable = computedStyle.getPropertyValue(
+                `--theme-color-${name}__dark`
+            )
+            if (!darkCSSVariable)
+                throw new Error(`Color ${name} dark not found`)
             let dark = new Color(darkCSSVariable).convertLinearToSRGB()
 
-            const lightCSSVariable = computedStyle.getPropertyValue(`--theme-color-${name}__light`)
-            if (!lightCSSVariable) throw new Error(`Color ${name} light not found`)
+            const lightCSSVariable = computedStyle.getPropertyValue(
+                `--theme-color-${name}__light`
+            )
+            if (!lightCSSVariable)
+                throw new Error(`Color ${name} light not found`)
             const light = new Color(lightCSSVariable).convertLinearToSRGB()
 
             colors[name] = {
                 original: { dark, light },
                 plus: {
-                    dark: dark.clone().offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
-                    light: light.clone().offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
+                    dark: dark
+                        .clone()
+                        .offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
+                    light: light
+                        .clone()
+                        .offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
                 },
                 minus: {
-                    dark: dark.clone().offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
-                    light: light.clone().offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
+                    dark: dark
+                        .clone()
+                        .offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
+                    light: light
+                        .clone()
+                        .offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
                 },
             }
 
@@ -102,7 +118,10 @@ export class DOM {
         }, {} as DOMCSSColors)
     }
 
-    public addEventListener<K extends keyof DOMEventListeners>(name: K, listener: DOMEventListeners[K]) {
+    public addEventListener<K extends keyof DOMEventListeners>(
+        name: K,
+        listener: DOMEventListeners[K]
+    ) {
         this.eventListeners[name].push(listener)
     }
 }

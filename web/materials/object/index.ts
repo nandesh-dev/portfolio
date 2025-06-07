@@ -40,7 +40,8 @@ export class ObjectMaterial extends ShaderMaterial {
     }
 
     public recalculateUniforms() {
-        this.uniforms.uObjectColorLight.value = this.parameters.color.object.light
+        this.uniforms.uObjectColorLight.value =
+            this.parameters.color.object.light
         this.uniforms.uObjectColorDark.value = this.parameters.color.object.dark
         this.uniforms.uFogColor.value = this.parameters.color.fog
         this.uniforms.uRoughness.value = this.parameters.roughness

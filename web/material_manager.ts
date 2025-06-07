@@ -1,5 +1,10 @@
 import { Vector3 } from 'three'
-import { DOMCSSColorShadeNames, type DOM, type DOMCSSColorName, type DOMCSSColorShadeName } from './dom'
+import {
+    DOMCSSColorShadeNames,
+    type DOM,
+    type DOMCSSColorName,
+    type DOMCSSColorShadeName,
+} from './dom'
 import { ObjectMaterial } from './materials/object'
 import { SkyMaterial } from './materials/sky'
 import type { Visual } from './visual'
@@ -14,7 +19,14 @@ export class MaterialManager {
     private dom: DOM
     private visual: Visual
     private materials: {
-        objects: Map<{ color: DOMCSSColorName; shade: DOMCSSColorShadeName; roughness: number }, ObjectMaterial>
+        objects: Map<
+            {
+                color: DOMCSSColorName
+                shade: DOMCSSColorShadeName
+                roughness: number
+            },
+            ObjectMaterial
+        >
         sky: SkyMaterial
     }
 
@@ -42,8 +54,14 @@ export class MaterialManager {
         })
     }
 
-    public getRandomShadeObjectMaterial(color: DOMCSSColorName, roughness: number): ObjectMaterial {
-        const shade = DOMCSSColorShadeNames[Math.floor(Math.random() * DOMCSSColorShadeNames.length)]
+    public getRandomShadeObjectMaterial(
+        color: DOMCSSColorName,
+        roughness: number
+    ): ObjectMaterial {
+        const shade =
+            DOMCSSColorShadeNames[
+                Math.floor(Math.random() * DOMCSSColorShadeNames.length)
+            ]
 
         let material = this.materials.objects.get({ color, shade, roughness })
         if (!material) {
@@ -100,11 +118,15 @@ export class MaterialManager {
 
     public updateVisualBasedMaterialUniforms() {
         this.materials.objects.forEach((material) => {
-            material.parameters.camera.position.copy(this.visual.camera.position)
+            material.parameters.camera.position.copy(
+                this.visual.camera.position
+            )
             material.recalculateUniforms()
         })
 
-        this.materials.sky.parameters.camera.position.copy(this.visual.camera.position)
+        this.materials.sky.parameters.camera.position.copy(
+            this.visual.camera.position
+        )
         this.materials.sky.recalculateUniforms()
     }
 }
