@@ -1,4 +1,9 @@
-import { LinearSRGBColorSpace, PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import {
+    LinearSRGBColorSpace,
+    PerspectiveCamera,
+    Scene,
+    WebGLRenderer,
+} from 'three'
 
 export type VisualParameters = {
     canvas: HTMLCanvasElement
@@ -16,7 +21,13 @@ export class Visual {
     constructor({ canvas, size }: VisualParameters) {
         this.scene = new Scene()
 
-        this.camera = new PerspectiveCamera(50, size.width / size.height, 0.1, 1000)
+        this.camera = new PerspectiveCamera(
+            50,
+            size.width / size.height,
+            0.1,
+            1000
+        )
+        this.camera.rotateY(-Math.PI / 2)
 
         this.renderer = new WebGLRenderer({ canvas, antialias: true })
         this.renderer.outputColorSpace = LinearSRGBColorSpace
