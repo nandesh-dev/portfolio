@@ -1,24 +1,32 @@
 import {
     LinearSRGBColorSpace,
+    Object3D,
     PerspectiveCamera,
     Scene,
     WebGLRenderer,
 } from 'three'
+import { CSS3DRenderer } from 'three/examples/jsm/Addons.js'
 
 export type VisualParameters = {
-    canvas: HTMLCanvasElement
+    webGLCanvas: HTMLCanvasElement
+    css3DContainer: HTMLElement
     size: {
         height: number
         width: number
     }
 }
 
+export type Renderer = {
+    webGL: WebGLRenderer
+    css3D: CSS3DRenderer
+}
+
 export class Visual {
     public scene: Scene
     public camera: PerspectiveCamera
-    public renderer: WebGLRenderer
+    public renderer: Renderer
 
-    constructor({ canvas, size }: VisualParameters) {
+    constructor({ webGLCanvas, css3DContainer, size }: VisualParameters) {
         this.scene = new Scene()
 
         this.camera = new PerspectiveCamera(
@@ -29,18 +37,28 @@ export class Visual {
         )
         this.camera.rotateY(-Math.PI / 2)
 
-        this.renderer = new WebGLRenderer({ canvas, antialias: true })
-        this.renderer.outputColorSpace = LinearSRGBColorSpace
-        this.renderer.setSize(size.width, size.height)
+        this.renderer = {
+            webGL: new WebGLRenderer({ canvas: webGLCanvas, antialias: true }),
+            css3D: new CSS3DRenderer({ element: css3DContainer }),
+        }
+        this.renderer.webGL.outputColorSpace = LinearSRGBColorSpace
+        this.renderer.webGL.setSize(size.width, size.height)
+        this.renderer.css3D.setSize(size.width, size.height)
     }
 
     public setSize(width: number, height: number) {
-        this.renderer.setSize(width, height)
+        this.renderer.webGL.setSize(width, height)
+        this.renderer.css3D.setSize(width, height)
         this.camera.aspect = width / height
         this.camera.updateProjectionMatrix()
     }
 
     public render() {
-        this.renderer.render(this.scene, this.camera)
+        this.renderer.webGL.render(this.scene, this.camera)
+        this.renderer.css3D.render(this.scene, this.camera)
+    }
+
+    public add(...objects: Object3D[]) {
+        this.scene.add(...objects)
     }
 }

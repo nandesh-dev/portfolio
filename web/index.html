@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <meta
             name="viewport"
             content="width=device-width, height=device-height, initial-scale=1.0"
@@ -10,7 +11,22 @@
         <title>Nandesh</title>
     </head>
     <body>
-        <canvas></canvas>
+        <canvas class="visual__webgl-renderer" id="renderer__webgl"></canvas>
+        <div class="visual__css3d-renderer" id="renderer__css3d"></div>
+        <template id="template__skill__coding">
+            <div class="skill__outer">
+                <div class="skill">
+                    <h1 class="skill__name">Web<br />Development</h1>
+                </div>
+            </div>
+        </template>
+        <template id="template__skill__design">
+            <div class="skill__outer">
+                <div class="skill">
+                    <h1 class="skill__name">UI / UX<br />Design</h1>
+                </div>
+            </div>
+        </template>
         <script type="module" src="./index.ts" defer></script>
     </body>
 </html>

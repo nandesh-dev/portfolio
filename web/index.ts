@@ -1,25 +1,24 @@
-import {
-    ArrowHelper,
-    AxesHelper,
-    CatmullRomCurve3,
-    Color,
-    IcosahedronGeometry,
-    Mesh,
-    MeshBasicMaterial,
-    Vector3,
-} from 'three'
+import { ArrowHelper, Color, IcosahedronGeometry, Mesh, Vector3 } from 'three'
 import './index.css'
 import { DOM } from './dom'
 import { Visual } from './visual'
 import { MaterialManager } from './material_manager'
 import { PathObject, PathObjectRadius } from './objects/path'
-import { OrbitControls } from 'three/examples/jsm/Addons.js'
+import { CSS3DObject, OrbitControls } from 'three/examples/jsm/Addons.js'
+import { Curve } from './curve'
+import { Portfolio } from './portfolio'
 
 const CAMERA_ALTITUDE = 1.5
 
 type Branch = {
-    objects: PathObject[]
-    curve: CatmullRomCurve3
+    startDistance: number
+    curve: Curve
+}
+
+type State = {
+    distance: number
+    velocity: number
+    location: 'main' | 'branch'
 }
 
 class Application {
@@ -27,15 +26,16 @@ class Application {
     private visual: Visual
     private materialManager: MaterialManager
     private branches: Branch[]
-    private curve: CatmullRomCurve3
-    private position: number
-    private velocity: number
+    private selectedBranch: Branch | null
+    private mainCurve: Curve
+    private state: State
     private cameraHelper: ArrowHelper
 
     constructor() {
         this.dom = new DOM()
         this.visual = new Visual({
-            canvas: this.dom.elements.canvas,
+            webGLCanvas: this.dom.elements.renderer.webGL,
+            css3DContainer: this.dom.elements.renderer.css3D,
             size: { width: window.innerWidth, height: window.innerHeight },
         })
         this.materialManager = new MaterialManager({
@@ -43,8 +43,18 @@ class Application {
             visual: this.visual,
         })
         this.branches = []
-        this.position = 0
-        this.velocity = 0
+        this.state = {
+            distance: 0,
+            velocity: 0,
+            location: 'main',
+        }
+
+        const sky = new Mesh(
+            new IcosahedronGeometry(100),
+            this.materialManager.getSkyMaterial()
+        )
+        this.visual.add(sky)
+
         this.cameraHelper = new ArrowHelper(
             new Vector3(1, 0, 0),
             new Vector3(0, 0, 0),
@@ -53,65 +63,64 @@ class Application {
             0.5,
             0.3
         )
-        this.visual.scene.add(this.cameraHelper)
+        this.visual.add(this.cameraHelper)
 
-        this.visual.scene.add(new AxesHelper())
-        this.visual.camera.position.y = 10
-        this.visual.camera.position.x = 30
+        this.visual.camera.position.set(10, 1.5, 0)
+        const control = new OrbitControls(this.visual.camera, document.body)
+        control.target.set(20, 1.5, 0)
+        control.update()
 
-        const controls = new OrbitControls(
-            this.visual.camera,
-            this.visual.renderer.domElement
-        )
-        console.log(controls)
-        controls.update()
-
-        const sky = new Mesh(
-            new IcosahedronGeometry(100),
-            this.materialManager.getSkyMaterial()
-        )
-        this.visual.scene.add(sky)
-
-        const curvePoints: Vector3[] = []
         const position = new Vector3()
-        for (let i = 0; i < 3; i++) {
-            position.add(new Vector3(PathObjectRadius * 2))
+        const mainCurvePoints: Vector3[] = []
+
+        for (let i = 0; i < Portfolio.introduction.length; i++) {
+            position.add(new Vector3(2 * PathObjectRadius))
+
             const object = new PathObject({
                 materialManager: this.materialManager,
                 type: 'straight',
             })
-            object.position.copy(position.clone())
-            this.visual.scene.add(object)
-            curvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
+            object.position.copy(position)
+            this.visual.add(object)
+
+            mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
         }
 
-        for (let angle = 0; angle > -Math.PI; angle += -Math.PI / 4) {
-            const branchCurvePoints: Vector3[] = [
-                position.clone().setY(CAMERA_ALTITUDE),
-            ]
+        for (let s = 0; s < Portfolio.skills.length; s++) {
+            const angle = (s * -Math.PI) / 4
+            const branchStartingPosition = position.clone()
             position.addScaledVector(
                 new Vector3(Math.cos(angle), 0, Math.sin(angle)),
                 PathObjectRadius * 2
             )
-            branchCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
 
             const object = new PathObject({
                 materialManager: this.materialManager,
-                type: 'branch',
+                type: s == Portfolio.skills.length - 1 ? 'right' : 'branch',
             })
             object.position.copy(position)
             object.rotateY(-angle)
             this.visual.scene.add(object)
-            curvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
 
+            const skillElement = (
+                this.dom.elements.template.skill[
+                    Portfolio.skills[s].id
+                ].content.cloneNode(true) as any
+            ).children[0] as HTMLDivElement
+            const skillNameObject = new CSS3DObject(skillElement)
+            skillNameObject.scale.setScalar(0.01)
+            skillNameObject.position.copy(position).setY(0.5)
+            skillNameObject.rotateY(-angle - Math.PI / 2)
+            this.visual.add(skillNameObject)
+
+            mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
+
+            const branchCurvePoints: Vector3[] = [...mainCurvePoints]
             const branchPosition = position.clone()
             const branchStartingAngle = angle + Math.PI / 4
-            const branchObjects = []
-            for (
-                let angle = branchStartingAngle;
-                angle < Math.PI;
-                angle += Math.PI / 4
-            ) {
+
+            for (let b = 0; b < Portfolio.skills[s].articles.length; b++) {
+                const angle = branchStartingAngle + (b * Math.PI) / 4
                 branchPosition.addScaledVector(
                     new Vector3(Math.cos(angle), 0, Math.sin(angle)),
                     PathObjectRadius * 2
@@ -123,58 +132,42 @@ class Application {
                 object.position.copy(branchPosition)
                 object.rotateY(-angle)
                 this.visual.scene.add(object)
-                branchObjects.push(object)
+
                 branchCurvePoints.push(
                     branchPosition.clone().setY(CAMERA_ALTITUDE)
                 )
             }
 
-            const branchCurve = new CatmullRomCurve3(
+            const branchCurve = new Curve(
                 branchCurvePoints,
                 false,
                 'centripetal',
                 0.4
             )
-
+            /*
             branchCurve.getPoints(100).forEach((position) => {
                 const cube = new Mesh(
                     new IcosahedronGeometry(),
                     new MeshBasicMaterial()
                 )
-                cube.scale.setScalar(0.06)
+                cube.scale.setScalar(0.01)
                 cube.position.copy(position)
                 this.visual.scene.add(cube)
             })
+            */
 
             this.branches.push({
-                objects: branchObjects,
+                startDistance: branchCurve.getDistanceFromPoint(
+                    branchStartingPosition
+                ),
                 curve: branchCurve,
             })
         }
 
-        this.curve = new CatmullRomCurve3(
-            curvePoints,
-            false,
-            'centripetal',
-            0.4
-        )
+        this.selectedBranch = this.branches[0]
+
+        this.mainCurve = new Curve(mainCurvePoints, false, 'centripetal', 0.4)
         this.animate()
-
-        this.curve.getPoints(100).forEach((position) => {
-            const cube = new Mesh(
-                new IcosahedronGeometry(),
-                new MeshBasicMaterial()
-            )
-            cube.scale.setScalar(0.06)
-            cube.position.copy(position)
-            this.visual.scene.add(cube)
-        })
-
-        window.addEventListener('wheel', (e) => {
-            const MULTIPLIER = 0.00001
-
-            this.velocity += e.deltaY * MULTIPLIER
-        })
     }
 
     private animate() {
@@ -185,17 +178,33 @@ class Application {
         this.position = Math.max(0, this.position)
         */
 
-        this.curve.getPoint(this.position, this.cameraHelper.position)
-        const tangent = this.curve.getTangent(this.position)
-        this.cameraHelper.setDirection(tangent)
+        this.state.distance += 0.02
+
+        if (this.selectedBranch) {
+            this.selectedBranch.curve.getPointFromDistance(
+                this.state.distance,
+                this.cameraHelper.position
+            )
+            const tangent = this.selectedBranch.curve.getTangentFromDistance(
+                this.state.distance
+            )
+            this.cameraHelper.setDirection(tangent)
+            this.state.distance %= this.selectedBranch.curve.getLength() - 1
+        } else {
+            this.mainCurve.getPointFromDistance(
+                this.state.distance,
+                this.cameraHelper.position
+            )
+            const tangent = this.mainCurve.getTangentFromDistance(
+                this.state.distance
+            )
+            this.cameraHelper.setDirection(tangent)
+        }
         /*.set(
             Math.asin(tangent.y),
             Math.atan2(-tangent.x, -tangent.z),
             0
         )*/
-
-        this.position += 0.002
-        this.position = this.position % 1
 
         this.materialManager.updateVisualBasedMaterialUniforms()
 

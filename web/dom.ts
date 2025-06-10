@@ -1,7 +1,16 @@
 import { Color } from 'three'
+import { Portfolio } from './portfolio'
 
 export type DOMElements = {
-    canvas: HTMLCanvasElement
+    renderer: {
+        webGL: HTMLCanvasElement
+        css3D: HTMLDivElement
+    }
+    template: {
+        skill: {
+            [name: string]: HTMLTemplateElement
+        }
+    }
 }
 
 export const DOMCSSColorNames = [
@@ -64,10 +73,30 @@ export class DOM {
     }
 
     private getElements(): DOMElements {
-        const canvas = document.querySelector('canvas')
-        if (!canvas) throw new Error('Canvas element not found')
+        const webGLRenderer = document.getElementById(
+            'renderer__webgl'
+        ) as HTMLCanvasElement
+        if (!webGLRenderer) throw new Error('WebGL Renderer element not found')
 
-        return { canvas }
+        const css3DRenderer = document.getElementById(
+            'renderer__css3d'
+        ) as HTMLDivElement
+        if (!css3DRenderer) throw new Error('CSS3D Renderer element not found')
+
+        const template: DOM['elements']['template'] = { skill: {} }
+        Portfolio.skills.forEach(({ id }) => {
+            const element = document.getElementById(
+                `template__skill__${id}`
+            ) as HTMLTemplateElement
+            if (!element)
+                throw new Error(`Skill template element for '${id}' not found`)
+            template.skill[id] = element
+        })
+
+        return {
+            renderer: { webGL: webGLRenderer, css3D: css3DRenderer },
+            template,
+        }
     }
 
     private getCSS(): DOMCSS {

@@ -55,10 +55,24 @@
     }
 }
 
+@font-face {
+    font-family: 'Sora';
+    font-style: normal;
+    font-weight: 100 800;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/sora/v16/xMQbuFFYT72XzQUpDg.woff2)
+        format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 html {
     -moz-text-size-adjust: none;
     -webkit-text-size-adjust: none;
     text-size-adjust: none;
+    font-family: Sora;
 }
 
 body {
@@ -69,7 +83,33 @@ body {
     background-color: var(--theme-color-background__dark);
 }
 
-canvas {
+.visual__webgl-renderer {
+    position: absolute;
     width: 100dvw;
     height: 100dvh;
+}
+
+.visual__css3d-renderer {
+    position: absolute;
+    width: 100dvw;
+    height: 100dvh;
+}
+
+.skill__outer {
+    height: 0;
+    width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: right;
+    justify-content: flex-end;
+}
+
+.skill {
+    padding-left: 6rem;
+    width: 50dvw;
+}
+
+.skill__name {
+    color: var(--theme-color-text__light);
+    font-size: 3em;
 }
