@@ -14,6 +14,7 @@ const CAMERA_ALTITUDE = 1.5
 type Branch = {
     startDistance: number
     curve: Curve
+    timeline: Timeline
 }
 
 type State = {
@@ -52,7 +53,7 @@ class Application {
         }
 
         const sky = new Mesh(
-            new IcosahedronGeometry(100),
+            new IcosahedronGeometry(100, 1),
             this.materialManager.getSkyMaterial()
         )
         this.visual.add(sky)
@@ -67,7 +68,7 @@ class Application {
         )
         this.visual.add(this.cameraHelper)
 
-        this.visual.camera.position.set(30, 3, -5)
+        this.visual.camera.position.set(25, 5, -7)
         const control = new OrbitControls(this.visual.camera, document.body)
         control.target.set(20, 1.5, 0)
         control.update()
@@ -86,11 +87,11 @@ class Application {
             object.position.copy(position)
             this.visual.add(object)
 
-            mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
             this.mainCurveTimeline.sync(
                 object.timeline,
                 mainCurvePoints.length * 0.8 * 1000
             )
+            mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
         }
 
         for (let s = 0; s < Portfolio.skills.length; s++) {
@@ -120,15 +121,16 @@ class Application {
             skillNameObject.rotateY(-angle - Math.PI / 2)
             this.visual.add(skillNameObject)
 
-            mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
             this.mainCurveTimeline.sync(
                 object.timeline,
                 mainCurvePoints.length * 0.8 * 1000
             )
+            mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
 
             const branchCurvePoints: Vector3[] = [...mainCurvePoints]
             const branchPosition = position.clone()
             const branchStartingAngle = angle + Math.PI / 4
+            const branchTimeline = new Timeline({ autoplay: false })
 
             for (let b = 0; b < Portfolio.skills[s].articles.length; b++) {
                 const angle = branchStartingAngle + (b * Math.PI) / 4
@@ -147,6 +149,7 @@ class Application {
                 branchCurvePoints.push(
                     branchPosition.clone().setY(CAMERA_ALTITUDE)
                 )
+                branchTimeline.sync(object.timeline, b * 0.8 * 1000)
             }
 
             const branchCurve = new Curve(
@@ -172,7 +175,13 @@ class Application {
                     branchStartingPosition
                 ),
                 curve: branchCurve,
+                timeline: branchTimeline,
             })
+
+            this.mainCurveTimeline.sync(
+                branchTimeline,
+                mainCurvePoints.length * 0.8 * 1000
+            )
         }
 
         this.selectedBranch = this.branches[0]
