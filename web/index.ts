@@ -7,6 +7,7 @@ import { PathObject, PathObjectRadius } from './objects/path'
 import { CSS3DObject, OrbitControls } from 'three/examples/jsm/Addons.js'
 import { Curve } from './curve'
 import { Portfolio } from './portfolio'
+import { Timeline } from 'animejs'
 
 const CAMERA_ALTITUDE = 1.5
 
@@ -28,6 +29,7 @@ class Application {
     private branches: Branch[]
     private selectedBranch: Branch | null
     private mainCurve: Curve
+    private mainCurveTimeline: Timeline
     private state: State
     private cameraHelper: ArrowHelper
 
@@ -65,13 +67,14 @@ class Application {
         )
         this.visual.add(this.cameraHelper)
 
-        this.visual.camera.position.set(10, 1.5, 0)
+        this.visual.camera.position.set(30, 3, -5)
         const control = new OrbitControls(this.visual.camera, document.body)
         control.target.set(20, 1.5, 0)
         control.update()
 
         const position = new Vector3()
         const mainCurvePoints: Vector3[] = []
+        this.mainCurveTimeline = new Timeline()
 
         for (let i = 0; i < Portfolio.introduction.length; i++) {
             position.add(new Vector3(2 * PathObjectRadius))
@@ -84,6 +87,10 @@ class Application {
             this.visual.add(object)
 
             mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
+            this.mainCurveTimeline.sync(
+                object.timeline,
+                mainCurvePoints.length * 0.8 * 1000
+            )
         }
 
         for (let s = 0; s < Portfolio.skills.length; s++) {
@@ -114,6 +121,10 @@ class Application {
             this.visual.add(skillNameObject)
 
             mainCurvePoints.push(position.clone().setY(CAMERA_ALTITUDE))
+            this.mainCurveTimeline.sync(
+                object.timeline,
+                mainCurvePoints.length * 0.8 * 1000
+            )
 
             const branchCurvePoints: Vector3[] = [...mainCurvePoints]
             const branchPosition = position.clone()
