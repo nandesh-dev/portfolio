@@ -7,7 +7,7 @@ import { PathObject, PathObjectRadius } from './objects/path'
 import { CSS3DObject, OrbitControls } from 'three/examples/jsm/Addons.js'
 import { Curve } from './curve'
 import { Portfolio } from './portfolio'
-import { Timeline } from 'animejs'
+import { createSpring, JSAnimation, Timeline } from 'animejs'
 
 const CAMERA_ALTITUDE = 1.5
 
@@ -68,7 +68,7 @@ class Application {
         )
         this.visual.add(this.cameraHelper)
 
-        this.visual.camera.position.set(25, 5, -7)
+        this.visual.camera.position.set(6, 2, 0)
         const control = new OrbitControls(this.visual.camera, document.body)
         control.target.set(20, 1.5, 0)
         control.update()
@@ -120,6 +120,28 @@ class Application {
             skillNameObject.position.copy(position).setY(0.5)
             skillNameObject.rotateY(-angle - Math.PI / 2)
             this.visual.add(skillNameObject)
+            this.mainCurveTimeline.add(
+                skillNameObject.position,
+                {
+                    y: [-2, 0.5],
+                    duration: 1000,
+                },
+                mainCurvePoints.length * 0.8 * 1000
+            )
+            this.mainCurveTimeline
+                .add(
+                    skillElement.style,
+                    {
+                        opacity: [0, 1],
+                        duration: 1000,
+                    },
+                    mainCurvePoints.length * 0.8 * 1000
+                )
+                .add(
+                    skillElement.style,
+                    { opacity: { to: 0 } },
+                    mainCurvePoints.length * 0.8 * 1000 + 2000
+                )
 
             this.mainCurveTimeline.sync(
                 object.timeline,
@@ -183,6 +205,9 @@ class Application {
                 mainCurvePoints.length * 0.8 * 1000
             )
         }
+
+        this.mainCurveTimeline.reset()
+        this.mainCurveTimeline.play()
 
         this.selectedBranch = this.branches[0]
 
