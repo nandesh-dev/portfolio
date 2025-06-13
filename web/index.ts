@@ -7,9 +7,14 @@ import { PathObject, PathObjectRadius } from './objects/path'
 import { CSS3DObject, OrbitControls } from 'three/examples/jsm/Addons.js'
 import { Curve } from './curve'
 import { Portfolio } from './portfolio'
-import { createSpring, JSAnimation, Timeline } from 'animejs'
+import Stats from 'stats.js'
+import { Timeline } from 'animejs'
 
 const CAMERA_ALTITUDE = 1.5
+
+var stats = new Stats()
+stats.showPanel(0)
+document.body.appendChild(stats.dom)
 
 type Branch = {
     startDistance: number
@@ -216,7 +221,7 @@ class Application {
     }
 
     private animate() {
-        requestAnimationFrame(() => this.animate())
+        stats.begin()
         /*
         this.position += this.velocity
         this.velocity -= this.velocity * 0.04
@@ -254,6 +259,8 @@ class Application {
         this.materialManager.updateVisualBasedMaterialUniforms()
 
         this.visual.render()
+        stats.end()
+        requestAnimationFrame(() => this.animate())
     }
 }
 
