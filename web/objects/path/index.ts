@@ -1,4 +1,4 @@
-import { Group, Mesh, Sphere } from 'three'
+import { Group, Mesh, Sphere, Vector3 } from 'three'
 import {
     BlenderExportedObject,
     type BlenderExportedObjectParameters,
@@ -11,6 +11,10 @@ import modelE from './model_e.obj?raw'
 import modelF from './model_f.obj?raw'
 import modelG from './model_g.obj?raw'
 import { Timeline } from 'animejs'
+
+export const PATH_OBJECT_RADIUS = 4.3 / 2
+export const PATH_OBJECT_ANIMATION_TIME = 1.2 * 1000
+export const PATH_OBJECT_TOTAL_ANIMATION_TIME = 1.5 * PATH_OBJECT_ANIMATION_TIME
 
 export type PathObjectType = 'straight' | 'right' | 'left' | 'branch'
 
@@ -56,20 +60,25 @@ export class PathObject extends Group {
             }
         }
 
-        this.timeline = new Timeline().pause()
+        this.timeline = new Timeline({ autoplay: true })
         this.children.forEach((child) => {
             const mesh = child as Mesh
             if (!mesh.isMesh) throw Error('Unknown object, mesh expected')
             mesh.geometry.computeBoundingSphere()
-            const offset = (mesh.geometry.boundingSphere as Sphere).center.x
+            const offset =
+                (0.5 +
+                    (mesh.geometry.boundingSphere as Sphere).center.x /
+                        (2 * PATH_OBJECT_RADIUS)) *
+                PATH_OBJECT_ANIMATION_TIME
             this.timeline.add(
                 mesh.position,
-                { y: [-10, -1, 0], duration: 1000 },
-                offset * 0.2 * 1000 + Math.random() * 250 + 250
+                {
+                    y: [-10, -6, -2, 0],
+                    duration: PATH_OBJECT_TOTAL_ANIMATION_TIME,
+                },
+                offset
             )
         })
-        this.timeline.reset()
+        this.timeline.init()
     }
 }
-
-export const PathObjectRadius = 4.3 / 2

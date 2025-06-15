@@ -105,11 +105,11 @@ body {
 }
 
 .skill {
-    padding-left: 6rem;
+    padding-left: 16rem;
     width: 50dvw;
 }
 
 .skill__name {
     color: var(--theme-color-text__light);
-    font-size: 3em;
+    font-size: 6em;
 }

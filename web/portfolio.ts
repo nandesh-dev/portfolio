@@ -3,11 +3,19 @@ export const Portfolio = {
     skills: [
         {
             id: 'coding',
+            articles: ['Hello'],
+        },
+        {
+            id: 'designing',
             articles: ['Hello', 'Hi', 'Sup!'],
         },
         {
-            id: 'design',
-            articles: ['Hey', 'Hello'],
+            id: 'robotics',
+            articles: ['Hello', 'Hi', 'Sup!'],
+        },
+        {
+            id: 'school',
+            articles: ['Hello', 'Hi', 'Sup!'],
         },
     ],
 }
