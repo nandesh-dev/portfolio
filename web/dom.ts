@@ -11,6 +11,11 @@ export type DOMElements = {
             [name: string]: HTMLTemplateElement
         }
     }
+    overlay: {
+        guide: {
+            branchSwitch: HTMLDivElement
+        }
+    }
 }
 
 export const DOMCSSColorNames = [
@@ -93,9 +98,17 @@ export class DOM {
             template.skill[id] = element
         })
 
+        const overlayGuideBranchSwitch = document.getElementById(
+            'overlay__guide__branch-switch'
+        ) as HTMLDivElement
+        if (!overlayGuideBranchSwitch)
+            throw new Error(`Overlay guide branch-switch element not found`)
+        const overlay = { guide: { branchSwitch: overlayGuideBranchSwitch } }
+
         return {
             renderer: { webGL: webGLRenderer, css3D: css3DRenderer },
             template,
+            overlay,
         }
     }
 

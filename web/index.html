@@ -10,9 +10,42 @@
         />
         <title>Nandesh</title>
     </head>
-    <body>
+    <body class="transition-disabled">
         <canvas class="visual__webgl-renderer" id="renderer__webgl"></canvas>
         <div class="visual__css3d-renderer" id="renderer__css3d"></div>
+        <div class="overlay" id="overlay">
+            <div class="overlay__guide">
+                <p
+                    id="overlay__guide__branch-switch"
+                    class="overlay__guide__branch-switch overlay__guide__branch-switch--hidden"
+                >
+                    Move <u>cursor</u> to <u>right</u> to explore the branch
+                </p>
+            </div>
+        </div>
+        <div id="loading-screen" class="loading-screen">
+            <p class="loading-screen__text">Loading</p>
+            <div class="loading-screen__visual">
+                <div
+                    class="loading-screen__visual__box loading-screen__visual__box--stroked"
+                ></div>
+                <div
+                    class="loading-screen__visual__box loading-screen__visual__box--filled"
+                ></div>
+                <div
+                    class="loading-screen__visual__box loading-screen__visual__box--stroked"
+                ></div>
+                <div
+                    class="loading-screen__visual__box loading-screen__visual__box--filled"
+                ></div>
+                <div
+                    class="loading-screen__visual__box loading-screen__visual__box--stroked"
+                ></div>
+                <div
+                    class="loading-screen__visual__box loading-screen__visual__box--stroked"
+                ></div>
+            </div>
+        </div>
         <template id="template__skill__coding">
             <div class="skill__outer">
                 <div class="skill">

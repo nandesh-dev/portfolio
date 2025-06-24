@@ -1,4 +1,4 @@
-import { Group, Mesh, Sphere, Vector3 } from 'three'
+import { Group, Mesh, Sphere } from 'three'
 import {
     BlenderExportedObject,
     type BlenderExportedObjectParameters,
