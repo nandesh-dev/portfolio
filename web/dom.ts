@@ -1,23 +1,6 @@
 import { Color } from 'three'
 import { Portfolio } from './portfolio'
 
-export type DOMElements = {
-    renderer: {
-        webGL: HTMLCanvasElement
-        css3D: HTMLDivElement
-    }
-    template: {
-        skill: {
-            [name: string]: HTMLTemplateElement
-        }
-    }
-    overlay: {
-        guide: {
-            branchSwitch: HTMLDivElement
-        }
-    }
-}
-
 export const DOMCSSColorNames = [
     'gray',
     'yellow',
@@ -54,7 +37,6 @@ export type DOMEventListeners = {
 }
 
 export class DOM {
-    public elements: DOMElements
     public css: DOMCSS
 
     private eventListeners: {
@@ -64,17 +46,6 @@ export class DOM {
     constructor() {
         this.elements = this.getElements()
         this.css = this.getCSS()
-
-        this.eventListeners = { cssupdate: [] }
-
-        window
-            .matchMedia('(prefers-color-scheme: dark)')
-            .addEventListener('change', () => {
-                this.css.colors = this.getCSSColors()
-                for (const listener of this.eventListeners.cssupdate) {
-                    listener(this.css)
-                }
-            })
     }
 
     private getElements(): DOMElements {
@@ -118,52 +89,5 @@ export class DOM {
         return { colors }
     }
 
-    private getCSSColors(): DOMCSSColors {
-        const computedStyle = getComputedStyle(document.body)
-
-        return DOMCSSColorNames.reduce((colors, name) => {
-            const darkCSSVariable = computedStyle.getPropertyValue(
-                `--theme-color-${name}__dark`
-            )
-            if (!darkCSSVariable)
-                throw new Error(`Color ${name} dark not found`)
-            let dark = new Color(darkCSSVariable).convertLinearToSRGB()
-
-            const lightCSSVariable = computedStyle.getPropertyValue(
-                `--theme-color-${name}__light`
-            )
-            if (!lightCSSVariable)
-                throw new Error(`Color ${name} light not found`)
-            const light = new Color(lightCSSVariable).convertLinearToSRGB()
-
-            colors[name] = {
-                original: { dark, light },
-                plus: {
-                    dark: dark
-                        .clone()
-                        .offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
-                    light: light
-                        .clone()
-                        .offsetHSL(DOMCSSColorShadeHueOffset, 0, 0),
-                },
-                minus: {
-                    dark: dark
-                        .clone()
-                        .offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
-                    light: light
-                        .clone()
-                        .offsetHSL(-DOMCSSColorShadeHueOffset, 0, 0),
-                },
-            }
-
-            return colors
-        }, {} as DOMCSSColors)
-    }
-
-    public addEventListener<K extends keyof DOMEventListeners>(
-        name: K,
-        listener: DOMEventListeners[K]
-    ) {
-        this.eventListeners[name].push(listener)
-    }
+    private getCSSColors(): DOMCSSColors {}
 }

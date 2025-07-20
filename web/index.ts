@@ -1,20 +1,14 @@
-import { ArrowHelper, Color, IcosahedronGeometry, Mesh, Vector3 } from 'three'
+import { IcosahedronGeometry, Mesh, Vector3 } from 'three'
 import './index.scss'
-import { DOM } from './dom'
 import { Visual } from './visual'
 import { MaterialManager } from './material_manager'
-import {
-    PathObject,
-    PATH_OBJECT_ANIMATION_TIME,
-    PATH_OBJECT_RADIUS,
-} from './objects/path'
-import { CSS3DObject, OrbitControls } from 'three/examples/jsm/Addons.js'
+import { PathObject, PATH_OBJECT_RADIUS } from './objects/path'
+import { CSS3DObject } from 'three/examples/jsm/Addons.js'
 import { Curve } from './curve'
 import { Portfolio } from './portfolio'
 import Stats from 'stats.js'
-import { Timeline, Timer } from 'animejs'
+import { Timeline } from 'animejs'
 
-const USE_ORBIT_CONTROL = false
 const CAMERA_ALTITUDE = 2
 const POSTER_ALTITUDE = 1
 
@@ -43,7 +37,6 @@ type State = {
 }
 
 class Application {
-    private dom: DOM
     private visual: Visual
     private materialManager: MaterialManager
     private branches: Branch[]
@@ -51,21 +44,14 @@ class Application {
     private mainCurveTimeline: Timeline
     private state: State
     private lastRenderTimestamp: number
+    private selectedBranch: Branch | null
 
     constructor() {
-        this.dom = new DOM()
-        this.visual = new Visual({
-            webGLCanvas: this.dom.elements.renderer.webGL,
-            css3DContainer: this.dom.elements.renderer.css3D,
-            size: { width: window.innerWidth, height: window.innerHeight },
-        })
-        this.materialManager = new MaterialManager({
-            dom: this.dom,
-            visual: this.visual,
-        })
+        this.visual = new Visual({})
+        this.materialManager = new MaterialManager({ visual: this.visual })
         this.branches = []
         this.state = {
-            distance: 0,
+            distance: 3,
             velocity: 0,
             location: 'main',
         }
@@ -75,14 +61,6 @@ class Application {
             this.materialManager.getSkyMaterial()
         )
         this.visual.add(sky)
-
-        this.visual.camera.position.set(12, 10, 2)
-        if (USE_ORBIT_CONTROL) {
-            const control = new OrbitControls(this.visual.camera, document.body)
-            control.enableZoom = false
-            control.target.set(13, 1.5, 0)
-            control.update()
-        }
 
         this.mainCurve = new Curve()
         this.mainCurveTimeline = new Timeline({ autoplay: false })
@@ -94,10 +72,7 @@ class Application {
                 type: 'straight',
             })
             object.position.copy(position)
-            this.mainCurveTimeline.sync(
-                object.timeline,
-                (i - 5) * PATH_OBJECT_ANIMATION_TIME
-            )
+            this.mainCurveTimeline.sync(object.timeline, i)
             this.visual.add(object)
 
             this.mainCurve.addSegment((i) => {
@@ -140,18 +115,17 @@ class Application {
             path.rotateY(angle)
             this.mainCurveTimeline.sync(
                 path.timeline,
-                (this.mainCurve.length - 5) * PATH_OBJECT_ANIMATION_TIME
+                Portfolio.introduction.length + s
             )
             this.visual.scene.add(path)
 
-            const skillNameElement = (
-                this.dom.elements.template.skill[
-                    Portfolio.skills[s].id
-                ].content.cloneNode(true) as any
-            ).children[0] as HTMLDivElement
+            const skillNameElement = createTemplateElement(
+                `template__skill__${Portfolio.skills[s].id}`
+            )
             const skillName = new CSS3DObject(skillNameElement)
             skillName.scale.setScalar(0.005)
             skillName.position.copy(position)
+            skillNameElement.style.opacity = '0'
             skillName.rotateY(angle - Math.PI / 2.1)
             this.visual.add(skillName)
             this.mainCurveTimeline
@@ -159,22 +133,22 @@ class Application {
                     skillName.position,
                     {
                         y: [-1, POSTER_ALTITUDE],
-                        duration: PATH_OBJECT_ANIMATION_TIME,
+                        duration: 1,
                     },
-                    (this.mainCurve.length - 3) * PATH_OBJECT_ANIMATION_TIME
+                    Portfolio.introduction.length + s + 1
                 )
                 .add(
                     skillNameElement.style,
                     {
                         opacity: [0, 1],
-                        duration: PATH_OBJECT_ANIMATION_TIME,
+                        duration: 1,
                     },
-                    (this.mainCurve.length - 3) * PATH_OBJECT_ANIMATION_TIME
+                    '<<+=0'
                 )
                 .add(
                     skillNameElement.style,
-                    { opacity: { to: 0 } },
-                    (this.mainCurve.length - 0.5) * PATH_OBJECT_ANIMATION_TIME
+                    { opacity: { to: 0, duration: 0.2 } },
+                    '<+=1'
                 )
 
             this.mainCurve.addSegment((i) => {
@@ -225,10 +199,7 @@ class Application {
                 })
                 path.position.copy(position)
                 path.rotateY(angle)
-                branchCurveTimeline.sync(
-                    path.timeline,
-                    b * PATH_OBJECT_ANIMATION_TIME
-                )
+                branchCurveTimeline.sync(path.timeline, b)
                 this.visual.scene.add(path)
 
                 branchCurve.addSegment((i) => {
@@ -237,9 +208,13 @@ class Application {
                             .clone()
                             .add(
                                 new Vector3(
-                                    Math.sin(angle + (i * Math.PI) / 4),
+                                    -Math.sin(
+                                        angle - (i * Math.PI) / 4 + Math.PI / 4
+                                    ),
                                     0,
-                                    Math.cos(angle + (i * Math.PI) / 4)
+                                    -Math.cos(
+                                        angle - (i * Math.PI) / 4 + Math.PI / 4
+                                    )
                                 )
                                     .multiplyScalar(
                                         PATH_OBJECT_RADIUS * 2.41421356
@@ -247,9 +222,9 @@ class Application {
                                     .setY(CAMERA_ALTITUDE)
                             ),
                         direction: new Vector3(
-                            Math.cos(angle + (i * Math.PI) / 4),
+                            Math.cos(angle - (i * Math.PI) / 4 + Math.PI / 4),
                             0,
-                            -Math.sin(angle + (i * Math.PI) / 4)
+                            -Math.sin(angle - (i * Math.PI) / 4 + Math.PI / 4)
                         ),
                     }
                 })
@@ -260,64 +235,11 @@ class Application {
                 curve: branchCurve,
                 timeline: branchCurveTimeline,
             })
-
-            this.mainCurveTimeline.sync(
-                branchCurveTimeline,
-                (s - 1) * PATH_OBJECT_ANIMATION_TIME
-            )
         }
 
-        if (USE_ORBIT_CONTROL) {
-            const cameraHelper = new ArrowHelper(
-                new Vector3(1, 0, 0),
-                new Vector3(0, 0, 0),
-                2,
-                new Color('cyan'),
-                0.5,
-                0.3
-            )
-            this.visual.add(cameraHelper)
-            this.mainCurveTimeline.sync(
-                new Timer({
-                    autoplay: false,
-                    onUpdate: (timer) => {
-                        const distance =
-                            timer.currentTime / PATH_OBJECT_ANIMATION_TIME
-                        const [point, error] = this.mainCurve.getPoint(distance)
-                        if (error !== null) {
-                            console.warn(error)
-                            return
-                        }
-                        cameraHelper.position.copy(point.position)
-                        cameraHelper.setDirection(point.direction)
-                    },
-                }),
-                0
-            )
-        } else {
-            this.mainCurveTimeline.sync(
-                new Timer({
-                    autoplay: false,
-                    onUpdate: (timer) => {
-                        try {
-                            const distance =
-                                timer.currentTime / PATH_OBJECT_ANIMATION_TIME
-                            const [point, error] =
-                                this.mainCurve.getPoint(distance)
-                            if (error !== null) {
-                                throw error
-                            }
-                            this.visual.camera.position.copy(point.position)
-                            this.visual.camera.lookAt(
-                                point.position.add(point.direction)
-                            )
-                        } catch {}
-                    },
-                }),
-                0
-            )
-        }
+        this.selectedBranch = this.branches[1]
 
+        /*
         this.mainCurveTimeline.sync(
             new Timer({
                 onUpdate: (timer) => {
@@ -344,9 +266,7 @@ class Application {
             }),
             0
         )
-
-        this.mainCurveTimeline.init()
-        this.mainCurveTimeline.seek(0.0000000001)
+        */
 
         this.lastRenderTimestamp = Date.now()
         this.animate()
@@ -354,7 +274,7 @@ class Application {
         document.addEventListener('wheel', (event) => {
             this.state.velocity =
                 Math.sign(event.deltaY) *
-                (1.2 + Math.abs(this.state.velocity) * 0.8)
+                (0.0006 + Math.abs(this.state.velocity) * 0.8)
         })
     }
 
@@ -368,11 +288,57 @@ class Application {
             0
         )
 
-        const DEACCELERATION = 0.002
+        const DEACCELERATION = 0.005
         this.state.velocity -= this.state.velocity * DEACCELERATION * deltaTime
-        if (Math.abs(this.state.velocity) < 0.05) this.state.velocity = 0
+        if (Math.abs(this.state.velocity) < 0.0001) this.state.velocity = 0
 
-        this.mainCurveTimeline.seek(this.state.distance)
+        const [cameraPoint, error] =
+            this.selectedBranch &&
+            this.state.distance > this.selectedBranch.startDistance
+                ? this.selectedBranch.curve.getPoint(
+                      Math.min(
+                          this.state.distance -
+                              this.selectedBranch.startDistance,
+                          this.selectedBranch.curve.length - 1
+                      )
+                  )
+                : this.mainCurve.getPoint(
+                      Math.min(this.state.distance, this.mainCurve.length - 1)
+                  )
+        if (error !== null) throw error
+        this.visual.camera.position.copy(cameraPoint.position)
+        this.visual.camera.lookAt(
+            cameraPoint.position.add(cameraPoint.direction)
+        )
+
+        if (
+            this.selectedBranch &&
+            this.state.distance > this.selectedBranch.startDistance + 2
+        ) {
+            this.mainCurveTimeline.init()
+        } else {
+            this.mainCurveTimeline.seek(this.state.distance + 3)
+        }
+        for (const branch of this.branches) {
+            if (this.state.distance > branch.startDistance - 2) {
+                if (
+                    branch == this.selectedBranch ||
+                    this.state.distance < branch.startDistance - 1
+                ) {
+                    branch.timeline.seek(
+                        branch.timeline.currentTime +
+                            (this.state.distance -
+                                branch.startDistance +
+                                2 -
+                                branch.timeline.currentTime) *
+                                0.2
+                    )
+                } else if (this.state.distance > branch.startDistance) {
+                    branch.timeline.seek(0)
+                }
+            }
+        }
+
         this.materialManager.updateVisualBasedMaterialUniforms()
 
         this.visual.render()
@@ -383,3 +349,23 @@ class Application {
 }
 
 new Application()
+
+class TemplateElementNotFoundError extends Error {
+    constructor(id: string) {
+        super(`Template element '#${id}' not found`)
+    }
+}
+
+class EmptyTemplateElementError extends Error {
+    constructor(id: string) {
+        super(`Empty template element '#${id}'`)
+    }
+}
+
+function createTemplateElement<T extends HTMLElement>(id: string): T {
+    const template = document.getElementById(id) as HTMLTemplateElement | null
+    if (!template) throw new TemplateElementNotFoundError(id)
+    const children = (template.content.cloneNode(true) as any).children
+    if (children.length === 0) throw new EmptyTemplateElementError(id)
+    return children[0]
+}

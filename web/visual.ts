@@ -7,14 +7,19 @@ import {
 } from 'three'
 import { CSS3DRenderer } from 'three/examples/jsm/Addons.js'
 
-export type VisualParameters = {
-    webGLCanvas: HTMLCanvasElement
-    css3DContainer: HTMLElement
-    size: {
-        height: number
-        width: number
+export class WebGLRendererElementNotFoundError extends Error {
+    constructor() {
+        super("WebGLRenderer element '#renderer__webgl' not found")
     }
 }
+
+export class CSS3DRendererElementNotFoundError extends Error {
+    constructor() {
+        super("CSS3DRenderer element '#renderer__css3d' not found")
+    }
+}
+
+export type VisualParameters = {}
 
 export type Renderer = {
     webGL: WebGLRenderer
@@ -26,31 +31,43 @@ export class Visual {
     public camera: PerspectiveCamera
     public renderer: Renderer
 
-    constructor({ webGLCanvas, css3DContainer, size }: VisualParameters) {
+    constructor({}: VisualParameters) {
+        const width = window.innerWidth
+        const height = window.innerHeight
+        const webGLRendererElement = document.getElementById(
+            'renderer__webgl'
+        ) as HTMLCanvasElement | null
+        if (!webGLRendererElement) throw new WebGLRendererElementNotFoundError()
+        const css3DRendererElement = document.getElementById(
+            'renderer__css3d'
+        ) as HTMLCanvasElement | null
+        if (!css3DRendererElement) throw new CSS3DRendererElementNotFoundError()
+
         this.scene = new Scene()
 
-        this.camera = new PerspectiveCamera(
-            50,
-            size.width / size.height,
-            0.1,
-            1000
-        )
+        this.camera = new PerspectiveCamera(60, width / height, 0.1, 1000)
         this.camera.rotateY(-Math.PI / 2)
 
         this.renderer = {
-            webGL: new WebGLRenderer({ canvas: webGLCanvas, antialias: true }),
-            css3D: new CSS3DRenderer({ element: css3DContainer }),
+            webGL: new WebGLRenderer({
+                canvas: webGLRendererElement,
+                antialias: true,
+            }),
+            css3D: new CSS3DRenderer({ element: css3DRendererElement }),
         }
         this.renderer.webGL.outputColorSpace = LinearSRGBColorSpace
-        this.renderer.webGL.setSize(size.width, size.height)
-        this.renderer.css3D.setSize(size.width, size.height)
-    }
-
-    public setSize(width: number, height: number) {
         this.renderer.webGL.setSize(width, height)
         this.renderer.css3D.setSize(width, height)
-        this.camera.aspect = width / height
-        this.camera.updateProjectionMatrix()
+
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth
+            const height = window.innerHeight
+
+            this.renderer.webGL.setSize(width, height)
+            this.renderer.css3D.setSize(width, height)
+            this.camera.aspect = width / height
+            this.camera.updateProjectionMatrix()
+        })
     }
 
     public render() {

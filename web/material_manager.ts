@@ -1,28 +1,55 @@
-import { Vector3 } from 'three'
-import {
-    DOMCSSColorShadeNames,
-    type DOM,
-    type DOMCSSColorName,
-    type DOMCSSColorShadeName,
-} from './dom'
+import { Color, Vector3 } from 'three'
 import { ObjectMaterial } from './materials/object'
 import { SkyMaterial } from './materials/sky'
 import type { Visual } from './visual'
 import { animate } from 'animejs'
 
+export const ColorNames = [
+    'gray',
+    'yellow',
+    'orange',
+    'red',
+    'purple',
+    'blue',
+    'sky',
+    'green',
+    'background',
+    'text',
+] as const
+export const ColorShadeNames = ['original', 'plus', 'minus'] as const
+export const ColorThemeNames = ['dark', 'light'] as const
+export const ColorShadeHueOffset = (0.4 / 180) * Math.PI
+
+export type ColorName = (typeof ColorNames)[number]
+export type ColorShadeName = (typeof ColorShadeNames)[number]
+export type ColorThemeName = (typeof ColorThemeNames)[number]
+export type CSSColorVariables = {
+    [name in ColorName]: {
+        [shade in ColorShadeName]: {
+            light: Color
+            dark: Color
+        }
+    }
+}
+
+export class CSSVariableNotFoundError extends Error {
+    constructor(name: string) {
+        super(`CSS Variable '${name}' not found`)
+    }
+}
+
 export type MaterialManagerParameters = {
-    dom: DOM
     visual: Visual
 }
 
 export class MaterialManager {
-    private dom: DOM
+    private colors: CSSColorVariables
     private visual: Visual
     private materials: {
         objects: Map<
             {
-                color: DOMCSSColorName
-                shade: DOMCSSColorShadeName
+                color: ColorName
+                shade: ColorShadeName
                 roughness: number
             },
             ObjectMaterial
@@ -31,17 +58,17 @@ export class MaterialManager {
     }
 
     constructor(parameters: MaterialManagerParameters) {
-        this.dom = parameters.dom
+        this.colors = getCSSColorVariables()
         this.visual = parameters.visual
         this.materials = {
             objects: new Map(),
             sky: new SkyMaterial({
                 color: {
                     sky: {
-                        light: this.dom.css.colors.background.original.light.clone(),
-                        dark: this.dom.css.colors.background.original.dark.clone(),
+                        light: this.colors.background.original.light.clone(),
+                        dark: this.colors.background.original.dark.clone(),
                     },
-                    fog: this.dom.css.colors.background.original.dark.clone(),
+                    fog: this.colors.background.original.dark.clone(),
                 },
                 camera: {
                     position: this.visual.camera.position.clone(),
@@ -49,29 +76,29 @@ export class MaterialManager {
             }),
         }
 
-        this.dom.addEventListener('cssupdate', () => {
-            this.updateColorBasedMaterialUniforms()
-        })
+        window
+            .matchMedia('(prefers-color-scheme: dark)')
+            .addEventListener('change', () => {
+                this.updateColorBasedMaterialUniforms()
+            })
     }
 
     public getRandomShadeObjectMaterial(
-        color: DOMCSSColorName,
+        color: ColorName,
         roughness: number
     ): ObjectMaterial {
         const shade =
-            DOMCSSColorShadeNames[
-                Math.floor(Math.random() * DOMCSSColorShadeNames.length)
-            ]
+            ColorShadeNames[Math.floor(Math.random() * ColorShadeNames.length)]
 
         let material = this.materials.objects.get({ color, shade, roughness })
         if (!material) {
             material = new ObjectMaterial({
                 color: {
                     object: {
-                        light: this.dom.css.colors[color][shade].light.clone(),
-                        dark: this.dom.css.colors[color][shade].dark.clone(),
+                        light: this.colors[color][shade].light.clone(),
+                        dark: this.colors[color][shade].dark.clone(),
                     },
-                    fog: this.dom.css.colors.background.original.dark.clone(),
+                    fog: this.colors.background.original.dark.clone(),
                 },
                 roughness,
                 camera: {
@@ -95,23 +122,23 @@ export class MaterialManager {
     private updateColorBasedMaterialUniforms() {
         this.materials.objects.forEach((material) => {
             animate(material.parameters.color.fog, {
-                ...this.dom.css.colors.background.original.dark.clone(),
+                ...this.colors.background.original.dark.clone(),
                 onRender: () => material.recalculateUniforms(),
             })
         })
 
         animate(this.materials.sky.parameters.color.sky.light, {
-            ...this.dom.css.colors.background.original.light.clone(),
+            ...this.colors.background.original.light.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
 
         animate(this.materials.sky.parameters.color.sky.dark, {
-            ...this.dom.css.colors.background.original.dark.clone(),
+            ...this.colors.background.original.dark.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
 
         animate(this.materials.sky.parameters.color.fog, {
-            ...this.dom.css.colors.background.original.dark.clone(),
+            ...this.colors.background.original.dark.clone(),
             onRender: () => this.materials.sky.recalculateUniforms(),
         })
     }
@@ -129,4 +156,45 @@ export class MaterialManager {
         )
         this.materials.sky.recalculateUniforms()
     }
+}
+
+function getCSSColorVariables(): CSSColorVariables {
+    const computedStyle = getComputedStyle(document.body)
+
+    return ColorNames.reduce((colors, name) => {
+        const themes = ColorThemeNames.reduce(
+            (themes, theme) => {
+                const variable = computedStyle.getPropertyValue(
+                    `--theme-color-${name}__${theme}`
+                )
+                if (!variable)
+                    throw new CSSVariableNotFoundError(
+                        `--theme-color-${name}__${theme}`
+                    )
+                let color = new Color(variable).convertLinearToSRGB()
+                themes[theme] = color
+
+                return themes
+            },
+            {} as { [theme in ColorThemeName]: Color }
+        )
+
+        colors[name] = {
+            original: { dark: themes.dark, light: themes.light },
+            plus: {
+                dark: themes.dark.clone().offsetHSL(ColorShadeHueOffset, 0, 0),
+                light: themes.light
+                    .clone()
+                    .offsetHSL(ColorShadeHueOffset, 0, 0),
+            },
+            minus: {
+                dark: themes.dark.clone().offsetHSL(-ColorShadeHueOffset, 0, 0),
+                light: themes.light
+                    .clone()
+                    .offsetHSL(-ColorShadeHueOffset, 0, 0),
+            },
+        }
+
+        return colors
+    }, {} as CSSColorVariables)
 }

@@ -60,24 +60,27 @@ export class PathObject extends Group {
             }
         }
 
-        this.timeline = new Timeline({ autoplay: true })
+        this.timeline = new Timeline({ autoplay: false })
         this.children.forEach((child) => {
             const mesh = child as Mesh
             if (!mesh.isMesh) throw Error('Unknown object, mesh expected')
             mesh.geometry.computeBoundingSphere()
             const offset =
-                (0.5 +
-                    (mesh.geometry.boundingSphere as Sphere).center.x /
-                        (2 * PATH_OBJECT_RADIUS)) *
-                PATH_OBJECT_ANIMATION_TIME
-            this.timeline.add(
-                mesh.position,
-                {
-                    y: [-10, -6, -2, 0],
-                    duration: PATH_OBJECT_TOTAL_ANIMATION_TIME,
-                },
-                offset
-            )
+                0.5 +
+                (mesh.geometry.boundingSphere as Sphere).center.x /
+                    (2 * PATH_OBJECT_RADIUS)
+            this.timeline
+                .add(
+                    mesh.position,
+                    {
+                        y: [-10, -6, -2, 0],
+                        duration:
+                            PATH_OBJECT_TOTAL_ANIMATION_TIME /
+                            PATH_OBJECT_ANIMATION_TIME,
+                    },
+                    offset
+                )
+                .add(mesh.position, { y: { to: -10 }, duration: 1 }, offset + 4)
         })
         this.timeline.init()
     }
